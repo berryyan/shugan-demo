@@ -1,0 +1,241 @@
+/* 设置页：浅色卡片风，复刻网页版 Settings */
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  padding-bottom: 24px;
+}
+.header { padding: 20px; }
+.title { font-size: 24px; font-weight: 900; color: #1e293b; }
+.subtitle { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+
+/* 门禁 */
+.gate-wrap { padding: 40px 24px 0; }
+.gate-card {
+  max-width: 320px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  padding: 24px;
+  text-align: center;
+}
+.gate-lock { font-size: 36px; }
+.gate-title { font-size: 18px; font-weight: 900; color: #1e293b; margin-top: 12px; }
+.gate-sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+.gate-input {
+  margin-top: 16px;
+  width: 100%;
+  height: 56px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 12px;
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+}
+.gate-error { color: #ef4444; font-size: 13px; font-weight: 700; margin-top: 8px; }
+.gate-btn {
+  margin-top: 16px;
+  height: 48px;
+  border-radius: 16px;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gate-btn-hover { opacity: 0.85; }
+
+/* 内容卡片 */
+.body { padding: 0 16px; max-width: 448px; margin: 0 auto; }
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-head {
+  padding: 10px 16px;
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+}
+.card-body { padding: 16px; }
+.card-danger { border: 2px solid #fee2e2; }
+
+/* 已兑换提醒 */
+.redeemed-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #ecfdf5;
+  border: 2px solid #6ee7b7;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+.redeemed-icon { font-size: 18px; }
+.redeemed-text { flex: 1; }
+.redeemed-title { font-size: 13px; font-weight: 700; color: #047857; }
+.redeemed-sub { font-size: 12px; color: #059669; margin-top: 4px; }
+.redeemed-ack {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  background: #fff;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+}
+
+/* 学习记录 */
+.stats { display: flex; gap: 8px; margin-bottom: 12px; }
+.stat {
+  flex: 1;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 10px 4px;
+  text-align: center;
+}
+.stat-value { font-size: 17px; font-weight: 900; color: #1e293b; }
+.stat-label { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+.log-empty { text-align: center; color: #cbd5e1; font-size: 13px; padding: 12px 0; }
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  border-bottom: 1px solid #f8fafc;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.log-time { color: #cbd5e1; font-variant-numeric: tabular-nums; }
+.log-skill {
+  font-weight: 700;
+  color: #334155;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.log-mode { font-size: 11px; }
+.log-result { color: #64748b; }
+.log-earned { font-weight: 900; color: #4f46e5; width: 44px; text-align: right; }
+.log-neg { color: #ef4444; }
+
+/* 愿望 */
+.wish-active { background: #fffbeb; border-radius: 12px; padding: 12px; }
+.wish-active-title { font-size: 14px; font-weight: 700; color: #b45309; }
+.wish-active-sub { font-size: 12px; color: #d97706; margin-top: 4px; }
+.wish-delete { font-size: 12px; font-weight: 700; color: #f87171; margin-top: 8px; }
+.wish-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.wish-label { font-size: 14px; color: #64748b; flex-shrink: 0; }
+.wish-picker { flex: 1; }
+.wish-picker-value {
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  padding: 0 12px;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+.wish-input {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  padding: 0 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 12px;
+}
+.wish-save {
+  height: 44px;
+  border-radius: 12px;
+  background: #f59e0b;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wish-save-hover { opacity: 0.85; }
+.wish-msg { font-size: 13px; font-weight: 700; color: #d97706; text-align: center; margin-top: 8px; }
+.wish-note { font-size: 12px; color: #94a3b8; margin-top: 8px; }
+
+/* 修改密码 */
+.pin-row { display: flex; gap: 8px; }
+.pin-input {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  padding: 0 12px;
+  font-weight: 700;
+  text-align: center;
+  box-sizing: border-box;
+}
+.pin-btn {
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 重置 */
+.reset-btn {
+  height: 48px;
+  border-radius: 12px;
+  background: #dc2626;
+  color: #fff;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.reset-btn-hover { opacity: 0.85; }
+.reset-confirm { text-align: center; }
+.reset-warn { font-size: 13px; font-weight: 700; color: #dc2626; margin-bottom: 12px; }
+.reset-btns { display: flex; gap: 12px; }
+.reset-cancel {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reset-ok {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  background: #dc2626;
+  color: #fff;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reset-done { font-size: 13px; font-weight: 700; color: #ef4444; text-align: center; margin-top: 8px; }
+.reset-note { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 8px; }
+
+.bottom-space { height: 24px; }

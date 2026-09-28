@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "游戏厅",
+  "usingComponents": {
+    "wish-banner": "/components/wishbanner/index"
+  }
+}

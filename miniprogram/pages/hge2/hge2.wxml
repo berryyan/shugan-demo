@@ -1,0 +1,150 @@
+<view class="page">
+
+  <!-- ===== 选关：木板 + 星形关卡卡 ===== -->
+  <view wx:if="{{phase === 'pick'}}" class="pick">
+    <view class="pick-top">
+      <view class="home-btn" bindtap="goHall">🏠</view>
+      <view class="tier-label" style="color:{{theme.color}};-webkit-text-stroke:2.5px {{theme.dark}}">{{theme.label}}</view>
+      <view class="pick-points">⚡{{points}}</view>
+    </view>
+    <view class="board-frame">
+      <view class="card-grid">
+        <view
+          wx:for="{{cards}}"
+          wx:key="num"
+          class="stage-card"
+          data-i="{{index}}"
+          hover-class="stage-card-hover"
+          bindtap="enterReady"
+        >
+          <view class="stage-num">{{item.num}}</view>
+          <view class="stage-star-wrap">
+            <image class="stage-star" src="{{item.locked ? svg.starDim : svg.star}}" mode="aspectFit" />
+            <view class="stage-icon">{{item.icon}}</view>
+          </view>
+          <view wx:if="{{item.grade}}" class="stage-grade" style="color:{{item.gradeColor}}">{{item.grade}}</view>
+          <view wx:if="{{item.locked}}" class="stage-lock">{{item.lockText}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 规则说明：绿底 + 白纸 + 评级标尺 ===== -->
+  <view wx:if="{{phase === 'ready'}}" class="ready">
+    <view class="ready-top">
+      <view class="chunky-btn {{points < tier.entryFee ? 'chunky-disabled' : ''}}" bindtap="payAndCountdown">
+        ▶ 开始（{{tier.entryFee}} 积分）
+      </view>
+      <view class="back-link" bindtap="backToPick">返回选关</view>
+    </view>
+    <view class="paper">
+      <view class="tape">说明</view>
+      <view class="paper-icon">{{stage.icon}}</view>
+      <view class="paper-num">关卡 {{stage.num}}</view>
+      <view class="paper-name">{{stage.name}}</view>
+      <view wx:for="{{stage.rules}}" wx:key="index" class="paper-rule">· {{item}}</view>
+      <view class="paper-pts">S=+30 A=+24 B=+18 C=+12 D=+8 E=+4 F=+0</view>
+    </view>
+    <view class="ruler">
+      <view class="ruler-arrow">▶</view>
+      <view class="ruler-grid">
+        <view wx:for="{{ruler}}" wx:key="g" class="ruler-cell">
+          <view class="ruler-letter">{{item.g}}</view>
+          <view class="ruler-val">{{item.v}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 倒计时 ===== -->
+  <view wx:if="{{phase === 'countdown'}}" class="countdown">
+    <view class="cd-num" wx:key="{{countdown}}">{{countdown}}</view>
+  </view>
+
+  <!-- ===== 游玩：满屏 ===== -->
+  <view wx:if="{{phase === 'play'}}" class="play">
+    <!-- 红黄蓝三赛道 -->
+    <view class="lanes">
+      <view wx:for="{{lanes}}" wx:key="index" class="lane" style="background:{{item}}"></view>
+    </view>
+
+    <!-- 第 1 关：不要挠我 -->
+    <block wx:if="{{stage.mechanic === 'tickle'}}">
+      <view class="big-counter">
+        <text class="bc-num">{{tCount}}</text>
+        <text class="bc-unit">分</text>
+      </view>
+      <view class="corner-btns">
+        <view class="corner-btn" bindtap="tickleRestart">↻</view>
+        <view class="corner-btn" bindtap="backToPick">✕</view>
+      </view>
+      <view class="t-left">{{tLeft}}</view>
+      <view class="foot-wrap" wx:key="{{tLaneKey}}" style="left:{{tLane * 33.333 - 6}}%">
+        <view class="foot-wiggle">
+          <view wx:key="{{tSquash}}" class="{{tSquash ? 'foot-squash' : ''}} foot-inner">
+            <image class="foot-img" src="{{svg.foot}}" mode="aspectFit" />
+          </view>
+        </view>
+        <text wx:for="{{tLaughs}}" wx:key="id" class="laugh" style="left:{{item.x}}%">哈</text>
+      </view>
+      <view class="feather-bar">
+        <view wx:for="{{lanes}}" wx:key="index" class="feather-cell">
+          <view class="feather-btn" data-i="{{index}}" bindtouchstart="ticklePress">
+            <image class="feather-img" src="{{svg.feather}}" mode="aspectFit" />
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 第 2 关：石头剪刀布 -->
+    <block wx:if="{{stage.mechanic === 'rps'}}">
+      <view class="big-counter">
+        <text class="bc-num bc-num4">{{rMs}}</text>
+        <text class="bc-unit">毫秒</text>
+      </view>
+      <view class="corner-btns">
+        <view class="corner-btn" bindtap="rpsRestart">↻</view>
+        <view class="corner-btn" bindtap="backToPick">✕</view>
+      </view>
+      <view class="rps-meta">
+        <view class="rps-score">得分 {{rScore}}</view>
+        <view class="rps-round">第 {{rRound}}/20 局</view>
+      </view>
+      <view class="rps-hand rps-hand-l" wx:key="'L' + rRoundKey">
+        <view style="animation:{{rLAnim}}" class="rps-hand-anim">
+          <image class="rps-img" src="{{rLHand}}" mode="aspectFit" />
+        </view>
+      </view>
+      <view class="rps-hand rps-hand-r" wx:key="'R' + rRoundKey">
+        <view style="animation:{{rRAnim}}" class="rps-hand-anim">
+          <view class="rps-flip">
+            <image class="rps-img" src="{{rRHand}}" mode="aspectFit" />
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{rPop}}" class="rps-pop {{rPop.ok ? 'pop-ok' : 'pop-bad'}}">{{rPop.text}}</view>
+      <view class="rps-bar">
+        <view class="rps-btn" style="color:#E53935" data-pick="left" bindtouchstart="rpsAnswer">红方胜</view>
+        <view class="rps-btn" style="color:#37474F" data-pick="draw" bindtouchstart="rpsAnswer">平局</view>
+        <view class="rps-btn" style="color:#1E88E5" data-pick="right" bindtouchstart="rpsAnswer">蓝方胜</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- ===== 结算 ===== -->
+  <view wx:if="{{phase === 'over'}}" class="over">
+    <view class="over-card">
+      <view class="over-grade" style="color:{{gradeColor}}">{{grade}}</view>
+      <view class="over-metric">{{stage.metricName}}：{{metricText}}</view>
+      <view class="over-sub" wx:if="{{grade === 'F'}}">没达到过关线，稳住再来！</view>
+      <view class="over-sub" wx:else>
+        获得 <text class="over-pts">+{{reward}}</text> 积分{{unlockedNextName ? '，「' + unlockedNextName + '」已解锁！' : ''}}
+      </view>
+      <view class="over-btns">
+        <view class="chunky-btn" bindtap="replay">再来一次</view>
+        <view class="chunky-btn chunky-grey" bindtap="backToPick">选关</view>
+      </view>
+    </view>
+  </view>
+
+</view>

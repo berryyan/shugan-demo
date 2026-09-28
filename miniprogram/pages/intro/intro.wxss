@@ -1,0 +1,18 @@
+.page { min-height: 100vh; background: linear-gradient(to bottom, #eef2ff, #ffffff); padding-bottom: 40rpx; }
+.header { padding: 36rpx; display: flex; align-items: center; justify-content: space-between; }
+.title { font-size: 44rpx; font-weight: 900; color: #1e293b; }
+.points { background: #fef3c7; color: #b45309; padding: 12rpx 28rpx; border-radius: 999rpx; font-size: 34rpx; font-weight: 900; }
+
+.card { margin: 0 28rpx 28rpx; background: #fff; border-radius: 28rpx; padding: 28rpx; box-shadow: 0 2rpx 8rpx rgba(15,23,42,0.04); }
+.card-title { font-weight: 900; color: #475569; margin-bottom: 16rpx; font-size: 30rpx; }
+.intro-line { font-size: 28rpx; color: #334155; line-height: 1.9; }
+
+.modes { padding: 0 28rpx; }
+.mode-card { border-radius: 28rpx; padding: 32rpx; margin-bottom: 24rpx; }
+.mode-hover { opacity: 0.85; transform: scale(0.98); }
+.mode-name { font-size: 36rpx; font-weight: 900; margin-bottom: 10rpx; }
+.mode-desc { font-size: 26rpx; opacity: 0.85; line-height: 1.7; }
+.mode-card.review { background: #d1fae5; color: #065f46; }
+.mode-card.normal { background: #e0e7ff; color: #3730a3; }
+.mode-card.advanced { background: #fee2e2; color: #991b1b; }
+.mode-desc.warn { font-weight: 700; }

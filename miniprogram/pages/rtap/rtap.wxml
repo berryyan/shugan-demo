@@ -1,0 +1,59 @@
+<view class="page">
+  <view class="header">
+    <view class="back" bindtap="goHall">‹</view>
+    <view class="title">{{meta.icon}} {{meta.title}}</view>
+    <view class="balance">余额 {{points}}</view>
+  </view>
+
+  <!-- 选关 -->
+  <view class="main" wx:if="{{phase === 'pick'}}">
+    <view class="desc">{{meta.description}}</view>
+    <view class="lv-grid">
+      <view
+        wx:for="{{levelCards}}"
+        wx:key="index"
+        class="lv-card {{item.active ? 'lv-active' : ''}} {{item.locked ? 'lv-locked' : ''}}"
+        data-i="{{index}}"
+        bindtap="pickLevel"
+      >
+        <view class="lv-title">{{item.locked ? '🔒 ' : ''}}{{item.title}}</view>
+        <view class="lv-hint">{{item.hint}}</view>
+        <view wx:if="{{item.grade}}" class="lv-grade grade-{{item.grade}}">{{item.grade}}</view>
+      </view>
+    </view>
+    <view class="start-btn {{feeOk ? '' : 'start-disabled'}}" bindtap="startGame">
+      {{feeOk ? '支付 ' + meta.entryFee + ' 积分 · 挑战' + levelCards[level].title : '积分不足'}}
+    </view>
+    <view class="rule-hint">抢跑按 1000ms 计 · S=+30 A=+24 B=+18 C=+12 D=+8 E=+4</view>
+  </view>
+
+  <!-- 游戏主舞台：全屏点击区 -->
+  <view
+    wx:if="{{phase === 'wait' || phase === 'fake' || phase === 'go' || phase === 'roundDone'}}"
+    class="stage stage-{{phase}}"
+    bindtap="tapStage"
+  >
+    <view class="stage-round">第 {{round + 1}}/3 次</view>
+    <view class="stage-text" wx:if="{{phase === 'wait'}}">等待变绿…</view>
+    <view class="stage-text" wx:elif="{{phase === 'fake'}}">点我！</view>
+    <view class="stage-text" wx:elif="{{phase === 'go'}}">点我！</view>
+    <view class="stage-text" wx:elif="{{phase === 'roundDone'}}">{{lastText}}</view>
+    <view class="stage-sub" wx:if="{{phase === 'fake'}}">（骗你的，别点）</view>
+    <view class="stage-done" wx:if="{{rounds.length > 0}}">{{roundsText || rounds.length + ' 次完成'}}</view>
+  </view>
+
+  <!-- 结算 -->
+  <view class="main" wx:if="{{phase === 'over'}}">
+    <view class="big-grade grade-{{grade}}">{{grade}}</view>
+    <view class="over-title">平均反应 {{avgMs}}ms</view>
+    <view class="over-sub" wx:if="{{grade === 'F'}}">没达到过关线，稳住再练一次</view>
+    <view class="over-sub" wx:else>
+      获得 <text class="over-reward">+{{reward}}</text> 积分{{newUnlock ? '，下一关已解锁！' : ''}}
+    </view>
+    <view class="over-detail">{{roundsText}}</view>
+    <view class="over-btns">
+      <view class="btn-white" bindtap="again">再来一次</view>
+      <view class="btn-ghost" bindtap="goHall">返回游戏厅</view>
+    </view>
+  </view>
+</view>

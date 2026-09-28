@@ -1,0 +1,86 @@
+<view class="page">
+  <view class="header">
+    <view class="back" bindtap="goHall">‹</view>
+    <view class="title">{{meta.icon}} {{meta.title}}</view>
+    <view class="balance">余额 {{points}}</view>
+  </view>
+
+  <!-- 选关 -->
+  <view class="main" wx:if="{{phase === 'pick'}}">
+    <view class="desc">{{meta.description}}</view>
+    <view class="lv-grid">
+      <view
+        wx:for="{{levelCards}}"
+        wx:key="index"
+        class="lv-card {{item.active ? 'lv-active' : ''}} {{item.locked ? 'lv-locked' : ''}}"
+        data-i="{{index}}"
+        bindtap="pickLevel"
+      >
+        <view class="lv-title">{{item.locked ? '🔒 ' : ''}}{{item.title}}</view>
+        <view class="lv-hint">{{item.hint}}</view>
+        <view wx:if="{{item.grade}}" class="lv-grade grade-{{item.grade}}">{{item.grade}}</view>
+      </view>
+    </view>
+    <view class="start-btn {{feeOk ? '' : 'start-disabled'}}" bindtap="startGame">
+      {{feeOk ? '支付 ' + meta.entryFee + ' 积分 · 挑战' + levelCards[level].title : '积分不足'}}
+    </view>
+    <view class="rule-hint">点错按 2 秒计入 · 技巧：心里换成同一种形式再比</view>
+  </view>
+
+  <!-- 游戏中 -->
+  <view class="play" wx:if="{{phase === 'play'}}">
+    <view class="play-stats">
+      <text>第 {{roundNo}}/{{totalRounds}} 题</text>
+      <text class="stat-dim">平均 {{avgLive}}ms{{wrongLive > 0 ? ' · 错 ' + wrongLive : ''}}</text>
+    </view>
+    <view class="play-q">哪边更大？</view>
+    <view class="sides">
+      <view
+        class="side {{flash === 'good' ? 'side-good' : flash === 'bad' ? 'side-bad' : ''}}"
+        data-side="left"
+        hover-class="side-hover"
+        bindtouchstart="tapSide"
+      >
+        <view class="expr side-expr">
+          <block wx:for="{{leftTokens}}" wx:for-item="tk" wx:key="index">
+            <text wx:if="{{tk.t === 'text'}}" class="tk">{{tk.v}}</text>
+            <view wx:elif="{{tk.t === 'frac'}}" class="frac">
+              <text class="fn">{{tk.n}}</text>
+              <text class="fd">{{tk.d}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+      <view
+        class="side {{flash === 'good' ? 'side-good' : flash === 'bad' ? 'side-bad' : ''}}"
+        data-side="right"
+        hover-class="side-hover"
+        bindtouchstart="tapSide"
+      >
+        <view class="expr side-expr">
+          <block wx:for="{{rightTokens}}" wx:for-item="tk" wx:key="index">
+            <text wx:if="{{tk.t === 'text'}}" class="tk">{{tk.v}}</text>
+            <view wx:elif="{{tk.t === 'frac'}}" class="frac">
+              <text class="fn">{{tk.n}}</text>
+              <text class="fd">{{tk.d}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 结算 -->
+  <view class="main" wx:if="{{phase === 'over'}}">
+    <view class="big-grade grade-{{grade}}">{{grade}}</view>
+    <view class="over-title">平均 {{avgMs}}ms · 错 {{wrongCount}} 题</view>
+    <view class="over-sub" wx:if="{{grade === 'F'}}">没达到过关线，慢一点没关系，先比准再比快</view>
+    <view class="over-sub" wx:else>
+      获得 <text class="over-reward">+{{reward}}</text> 积分{{newUnlock ? '，下一关已解锁！' : ''}}
+    </view>
+    <view class="over-btns">
+      <view class="btn-white" bindtap="again">再来一次</view>
+      <view class="btn-ghost" bindtap="goHall">返回游戏厅</view>
+    </view>
+  </view>
+</view>

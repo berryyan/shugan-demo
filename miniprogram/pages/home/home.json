@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "数学不再难",
+  "usingComponents": {
+    "wish-banner": "/components/wishbanner/index"
+  }
+}

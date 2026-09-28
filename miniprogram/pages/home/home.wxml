@@ -1,0 +1,42 @@
+<view class="page">
+  <view class="header">
+    <view>
+      <view class="title">数学不再难</view>
+      <view class="subtitle">快问快答 · 练出数感</view>
+    </view>
+    <view class="points">⚡ {{points}}</view>
+  </view>
+
+  <wish-banner />
+
+  <view class="main">
+    <view wx:for="{{grades}}" wx:key="id" wx:for-item="grade" class="grade">
+      <view class="grade-title">
+        📖 {{grade.title}}
+        <text wx:if="{{!grade.available}}" class="soon">即将上线</text>
+      </view>
+
+      <view wx:for="{{grade.units}}" wx:key="id" wx:for-item="unit" class="unit-card">
+        <view class="unit-title">{{unit.title}}</view>
+        <view wx:if="{{unit.skills.length === 0}}" class="empty">🔒 内容筹备中</view>
+        <view
+          wx:for="{{unit.skills}}"
+          wx:key="id"
+          wx:for-item="skill"
+          class="skill-row"
+          hover-class="skill-row-hover"
+          data-id="{{skill.id}}"
+          bindtap="openSkill"
+        >
+          <view>
+            <view class="skill-name">{{skill.title}}</view>
+            <view class="skill-meta">{{skill.questionCount}} 题 · 每题 {{skill.timeLimitSec}} 秒</view>
+          </view>
+          <view class="chevron">›</view>
+        </view>
+      </view>
+
+      <view wx:if="{{grade.units.length === 0}}" class="empty-card">🔒 敬请期待</view>
+    </view>
+  </view>
+</view>

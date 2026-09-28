@@ -1,0 +1,146 @@
+<view class="page">
+  <view class="header">
+    <view class="title">设置</view>
+    <view class="subtitle">家长专用</view>
+  </view>
+
+  <!-- 家长密码门禁 -->
+  <view wx:if="{{!unlocked}}" class="gate-wrap">
+    <view class="gate-card">
+      <view class="gate-lock">🔒</view>
+      <view class="gate-title">{{gateTitle}}</view>
+      <view class="gate-sub">{{gateSub}}</view>
+      <input
+        class="gate-input"
+        type="number"
+        password
+        maxlength="4"
+        value="{{pinInput}}"
+        bindinput="onPinInput"
+        confirm-type="done"
+        bindconfirm="submitPin"
+        placeholder="····"
+      />
+      <view wx:if="{{pinError}}" class="gate-error">{{pinError}}</view>
+      <view class="gate-btn" hover-class="gate-btn-hover" bindtap="submitPin">{{gateBtn}}</view>
+    </view>
+  </view>
+
+  <!-- 设置内容 -->
+  <view wx:else class="body">
+
+    <!-- 已兑换提醒 -->
+    <view wx:if="{{lastRedeemed}}" class="redeemed-card">
+      <view class="redeemed-icon">✅</view>
+      <view class="redeemed-text">
+        <view class="redeemed-title">愿望「{{lastRedeemed.text}}」（{{lastRedeemed.target}} 分）已于 {{lastRedeemedDate}} 兑换</view>
+        <view class="redeemed-sub">记得兑现承诺，并在下方设置新愿望！</view>
+      </view>
+      <view class="redeemed-ack" bindtap="ackRedeemed">知道了</view>
+    </view>
+
+    <!-- 当日学习记录 -->
+    <view class="card">
+      <view class="card-head">当日学习记录</view>
+      <view class="card-body">
+        <view class="stats">
+          <view class="stat">
+            <view class="stat-value">{{sum.sessions}}</view>
+            <view class="stat-label">局数</view>
+          </view>
+          <view class="stat">
+            <view class="stat-value">{{sum.correctQ}}/{{sum.totalQ}}</view>
+            <view class="stat-label">答题</view>
+          </view>
+          <view class="stat">
+            <view class="stat-value">{{sum.accuracy}}%</view>
+            <view class="stat-label">正确率</view>
+          </view>
+          <view class="stat">
+            <view class="stat-value">{{sumEarnedText}}</view>
+            <view class="stat-label">积分</view>
+          </view>
+        </view>
+        <view wx:if="{{log.length === 0}}" class="log-empty">今天还没有学习记录</view>
+        <view wx:for="{{log}}" wx:key="index" class="log-row">
+          <text class="log-time">{{item.time}}</text>
+          <text class="log-skill">{{item.skillTitle}}</text>
+          <text class="log-mode">{{item.modeLabel}}</text>
+          <text class="log-result">{{item.result}}</text>
+          <text class="log-earned {{item.earnedNeg ? 'log-neg' : ''}}">{{item.earnedText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 积分激励（愿望兑换） -->
+    <view class="card">
+      <view class="card-head">🎁 积分激励（愿望兑换）</view>
+      <view class="card-body">
+        <view wx:if="{{wish}}" class="wish-active">
+          <view class="wish-active-title">进行中：{{wish.target}} 分 → 「{{wish.text}}」</view>
+          <view class="wish-active-sub">孩子当前 {{points}} 分（{{wishPct}}%）</view>
+          <view class="wish-delete" bindtap="deleteWish">🗑 删除这个愿望</view>
+        </view>
+        <block wx:else>
+          <view class="wish-row">
+            <text class="wish-label">目标分</text>
+            <picker class="wish-picker" range="{{targets}}" value="{{targetIndex}}" bindchange="pickTarget">
+              <view class="wish-picker-value">{{targets[targetIndex]}} ›</view>
+            </picker>
+          </view>
+          <input
+            class="wish-input"
+            maxlength="20"
+            placeholder="愿望内容，如：奖励零用钱 5 元"
+            bindinput="onWishInput"
+          />
+          <view class="wish-save" hover-class="wish-save-hover" bindtap="saveWish">保存愿望</view>
+          <view wx:if="{{wishMsg}}" class="wish-msg">{{wishMsg}}</view>
+          <view class="wish-note">孩子积分达到目标后可自行点击兑换（扣除目标分），兑换后这里会提醒你兑现并设置新愿望。</view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 家长密码修改 -->
+    <view class="card" wx:if="{{hasPin}}">
+      <view class="card-head">家长密码</view>
+      <view class="card-body">
+        <view class="pin-row">
+          <input
+            class="pin-input"
+            type="number"
+            password
+            maxlength="4"
+            value="{{changeInput}}"
+            placeholder="{{changeStep === 'old' ? '原密码' : '新密码（4 位数字）'}}"
+            bindinput="onChangeInput"
+          />
+          <view class="pin-btn" hover-class="wish-save-hover" bindtap="submitChangePin">
+            {{changeStep === 'old' ? '下一步' : '确认修改'}}
+          </view>
+        </view>
+        <view wx:if="{{pinMsg}}" class="wish-msg">{{pinMsg}}</view>
+      </view>
+    </view>
+
+    <!-- 重置分数（红色，放最后） -->
+    <view class="card card-danger">
+      <view class="card-body">
+        <view wx:if="{{!resetArmed}}" class="reset-btn" hover-class="reset-btn-hover" bindtap="armReset">
+          ↺ 重置分数
+        </view>
+        <view wx:else class="reset-confirm">
+          <view class="reset-warn">确定清零？积分余额和学习记录将全部清空（游戏记录保留）</view>
+          <view class="reset-btns">
+            <view class="reset-cancel" bindtap="cancelReset">取消</view>
+            <view class="reset-ok" bindtap="confirmReset">确认清零</view>
+          </view>
+        </view>
+        <view wx:if="{{resetDone}}" class="reset-done">已清零 ✓</view>
+        <view class="reset-note">调试用：积分与学习记录清零，游戏排行榜和关卡记录不受影响</view>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+</view>

@@ -1,0 +1,38 @@
+<!-- 兑换成功提示 -->
+<view wx:if="{{justRedeemed}}" class="wb redeemed">
+  <view class="redeemed-emoji">🎉</view>
+  <view class="redeemed-title">已兑换「{{justRedeemed}}」</view>
+  <view class="redeemed-sub">快去找家长兑现吧！</view>
+  <view class="redeemed-btn" bindtap="dismissRedeemed">好的</view>
+</view>
+
+<!-- 愿望进度条 -->
+<view
+  wx:elif="{{wish}}"
+  class="wb {{reached ? 'wb-reached' : ''}}"
+  hover-class="{{reached ? 'wb-hover' : ''}}"
+  bindtap="tapBanner"
+>
+  <view class="wb-row">
+    <text class="wb-gift">🎁</text>
+    <text class="wb-text">愿望：{{wish.text}}</text>
+    <text class="wb-state {{reached ? 'wb-state-hot' : ''}}">{{reached ? '点我兑换 🎁' : '还差 ' + lack + ' 分'}}</text>
+  </view>
+  <view class="wb-bar">
+    <view class="wb-bar-inner {{reached ? 'wb-bar-hot' : ''}}" style="width:{{pct}}%"></view>
+  </view>
+</view>
+
+<!-- 兑换确认弹窗 -->
+<view wx:if="{{confirming}}" class="mask" bindtap="cancelRedeem">
+  <view class="dialog" catchtap="noop">
+    <view class="dialog-emoji">🎁</view>
+    <view class="dialog-title">兑换愿望？</view>
+    <view class="dialog-sub">「{{wish.text}}」将扣除 {{wish.target}} 积分，
+兑换后记得找家长兑现哦！</view>
+    <view class="dialog-btns">
+      <view class="dlg-btn dlg-cancel" bindtap="cancelRedeem">再想想</view>
+      <view class="dlg-btn dlg-ok" bindtap="confirmRedeem">确认兑换</view>
+    </view>
+  </view>
+</view>

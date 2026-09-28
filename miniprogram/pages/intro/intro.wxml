@@ -1,0 +1,29 @@
+<view class="page" wx:if="{{skill}}">
+  <view class="header">
+    <view class="title">{{skill.title}}</view>
+    <view class="points">⚡ {{points}}</view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">📋 考核点</view>
+    <view wx:for="{{skill.intro}}" wx:key="index" class="intro-line">· {{item}}</view>
+  </view>
+
+  <view class="modes">
+    <view wx:if="{{skill.supportsReview !== false}}" class="mode-card review" data-mode="review" hover-class="mode-hover" bindtap="start">
+      <view class="mode-name">📝 复习模式</view>
+      <view class="mode-desc">填空作答 · {{reviewParams.count}} 题 · 每题 {{reviewParams.timeLimitSec}} 秒</view>
+      <view class="mode-desc">答错 +5 秒重答，每题 3 次机会</view>
+    </view>
+    <view class="mode-card normal" data-mode="normal" hover-class="mode-hover" bindtap="start">
+      <view class="mode-name">🎯 闯关模式</view>
+      <view class="mode-desc">选择题 · {{normalParams.count}} 题 · 每题 {{normalParams.timeLimitSec}} 秒</view>
+      <view class="mode-desc">1 个正确答案 + 3 个干扰项</view>
+    </view>
+    <view class="mode-card advanced" data-mode="advanced" hover-class="mode-hover" bindtap="start">
+      <view class="mode-name">⚡ 进阶模式</view>
+      <view class="mode-desc">选择题 · {{advancedParams.count}} 题 · 每题 {{advancedParams.timeLimitSec}} 秒</view>
+      <view class="mode-desc warn">一错归零 · 全对积分 ×2</view>
+    </view>
+  </view>
+</view>

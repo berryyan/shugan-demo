@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="header">
+    <view class="title">🎮 游戏厅</view>
+    <view class="points">⚡ {{points}}</view>
+  </view>
+  <view class="tip">消耗积分入场，练专注力 / 记忆力 / 反应力，冲击排行榜！</view>
+
+  <wish-banner />
+
+  <view wx:for="{{games}}" wx:key="id" class="card">
+    <view class="card-main" data-game="{{item}}" bindtap="openGame" hover-class="card-hover">
+      <view class="card-head">
+        <text class="card-icon">{{item.icon}}</text>
+        <view class="card-head-text">
+          <view class="card-title-row">
+            <text class="card-title">{{item.title}}</text>
+            <text class="ability">{{item.ability}}</text>
+          </view>
+          <view class="card-desc">{{item.description}}</view>
+        </view>
+      </view>
+      <view class="fee {{item.lockReason ? 'fee-no' : item.affordable ? 'fee-ok' : 'fee-no'}}">
+        {{item.lockReason ? item.lockReason : item.affordable ? '入场 ' + item.entryFee + ' 积分' : '积分不足（需 ' + item.entryFee + '）'}}
+      </view>
+      <view class="dots">
+        <view wx:for="{{item.dots}}" wx:for-item="dot" wx:key="index" class="dot {{dot.cls}}">{{dot.label}}</view>
+        <text class="s-count">S 总数 {{item.sCount}}/6</text>
+      </view>
+    </view>
+
+    <view class="board">
+      <view class="board-title">🏆 排行榜（{{item.scoreLabel}}）</view>
+      <view wx:if="{{item.board.length === 0}}" class="board-empty">虚位以待，来当第一名！</view>
+      <block wx:if="{{item.board.length > 0}}">
+        <view wx:for="{{item.board}}" wx:for-item="e" wx:key="index" class="board-row">
+          <text class="board-rank {{index === 0 ? 'board-first' : ''}}">{{index + 1}}</text>
+          <text class="board-name">{{e.name}}</text>
+          <text class="board-score">{{e.score}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

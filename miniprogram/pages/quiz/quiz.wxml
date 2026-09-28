@@ -1,0 +1,149 @@
+<view class="page">
+
+  <!-- ===== 答题中 / 反馈 ===== -->
+  <block wx:if="{{phase === 'answering' || phase === 'feedback'}}">
+    <!-- 顶栏：退出 / 进度 / 模式 / 连对 / 得分 -->
+    <view class="topbar">
+      <view class="quit" bindtap="goBack">✕</view>
+      <view class="counter">{{index + 1}} / {{total}}</view>
+      <view class="mode-badge mode-{{mode}}">{{modeLabel}}</view>
+      <view class="topbar-right">
+        <view class="streak" wx:if="{{streak >= 2}}">🔥 {{streak}} 连对</view>
+        <view class="earned">{{earned}} 分</view>
+      </view>
+    </view>
+
+    <!-- 倒数进度条（按秒） -->
+    <view class="bar">
+      <view class="bar-inner {{urgent ? 'bar-urgent' : ''}}" style="width:{{pct}}%"></view>
+    </view>
+    <view class="secs {{urgent ? 'secs-urgent' : ''}}">{{timeLeftCeil}}s</view>
+
+    <!-- 超大字题面 -->
+    <view class="prompt-area">
+      <view class="requirement" wx:if="{{requirement}}">{{requirement}}</view>
+      <view id="promptOuter" class="prompt-outer">
+        <view id="promptInner" class="expr prompt-inner" style="transform:scale({{promptScale}})">
+          <block wx:for="{{promptTokens}}" wx:key="index">
+            <text wx:if="{{item.t === 'text'}}" class="tk">{{item.v}}</text>
+            <view wx:elif="{{item.t === 'frac'}}" class="frac">
+              <text class="fn">{{item.n}}</text>
+              <text class="fd">{{item.d}}</text>
+            </view>
+            <text wx:elif="{{item.t === 'op'}}" class="op">{{item.v}}</text>
+            <text wx:elif="{{item.t === 'paren'}}" class="paren">{{item.v}}</text>
+            <text wx:elif="{{item.t === 'vsq'}}" class="vsq">?</text>
+          </block>
+        </view>
+      </view>
+      <view class="eq-mark" wx:if="{{!reviewMode}}">= ?</view>
+
+      <!-- 复习模式：填空显示框（✕ 小圆钮右上角一键清空；答错后红框） -->
+      <view wx:if="{{reviewMode}}" class="input-wrap">
+        <view class="input-box {{attempts > 0 ? 'input-bad' : ''}}">
+          <view class="expr input-expr" wx:if="{{inputTokens.length}}">
+            <block wx:for="{{inputTokens}}" wx:key="index">
+              <text wx:if="{{item.t === 'text'}}" class="tk">{{item.v}}</text>
+              <view wx:elif="{{item.t === 'frac'}}" class="frac">
+                <view class="fn"><view wx:if="{{item.n === null}}" class="ghost"></view><block wx:else>{{item.n}}</block></view>
+                <view class="fd"><view wx:if="{{item.d === null}}" class="ghost"></view><block wx:else>{{item.d}}</block></view>
+              </view>
+            </block>
+          </view>
+          <text class="input-ph" wx:else>点键盘输入</text>
+        </view>
+        <view wx:if="{{input && phase === 'answering'}}" class="clear-btn" data-key="clear" bindtap="pressKey">✕</view>
+      </view>
+
+      <!-- 即时反馈条（固定槽位占位，出现/消失不推动题面，消除画面跳跃） -->
+      <view class="feedback-slot">
+        <view
+          wx:if="{{(phase === 'feedback' || attempts > 0) && lastFeedbackText}}"
+          class="feedback {{lastDelta > 0 ? 'fb-good' : lastDelta < 0 ? 'fb-bad' : 'fb-plain'}}"
+        >{{lastFeedbackText}}</view>
+      </view>
+    </view>
+
+    <!-- 复习模式：数字键盘 -->
+    <view class="keypad" wx:if="{{reviewMode}}">
+      <view
+        wx:for="{{keypadKeys}}"
+        wx:key="k"
+        class="key {{item.icon ? 'key-fn' : ''}} {{item.sub ? 'key-sub' : ''}}"
+        data-key="{{item.k}}"
+        hover-class="key-hover"
+        bindtap="pressKey"
+      >
+        <text class="key-label {{item.small ? 'key-label-small' : ''}}">{{item.label}}</text>
+        <text wx:if="{{item.sub}}" class="key-subtext">{{item.sub}}</text>
+      </view>
+      <view class="key key-submit" style="width:{{submitWidth}}" hover-class="key-hover" bindtap="submitInput">✓</view>
+    </view>
+
+    <!-- 闯关 / 进阶：固定 4 选项 -->
+    <view class="choices" wx:else>
+      <view
+        wx:for="{{choices}}"
+        wx:key="id"
+        class="choice choice-{{item.cls}}"
+        style="order:{{item.order}}"
+        data-id="{{item.id}}"
+        hover-class="choice-hover"
+        bindtap="onChoice"
+      >
+        <view class="expr choice-expr">
+          <block wx:for="{{item.tokens}}" wx:for-item="tk" wx:key="index">
+            <text wx:if="{{tk.t === 'text'}}" class="tk">{{tk.v}}</text>
+            <view wx:elif="{{tk.t === 'frac'}}" class="frac">
+              <text class="fn">{{tk.n}}</text>
+              <text class="fd">{{tk.d}}</text>
+            </view>
+            <text wx:elif="{{tk.t === 'op'}}" class="op">{{tk.v}}</text>
+            <text wx:elif="{{tk.t === 'paren'}}" class="paren">{{tk.v}}</text>
+          </block>
+        </view>
+        <view class="trap" wx:if="{{item.trap && (item.cls === 'wrong' || item.cls === 'grey')}}">{{item.trap}}</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ===== 结算 ===== -->
+  <view class="result" wx:if="{{phase === 'done'}}">
+    <view class="result-emoji">{{correctCount === total ? '🏆' : '🎉'}}</view>
+    <view class="result-title">{{correctCount === total ? '全部答对！' : '本局完成'}}</view>
+    <view class="result-score">+{{finalEarned}} 分</view>
+    <view class="result-rows">
+      <view class="rrow"><text>答对</text><text>{{correctCount}} / {{total}}</text></view>
+      <view class="rrow"><text>一次就对</text><text>{{firstTryCount}} 题</text></view>
+      <view class="rrow"><text>平均用时</text><text>{{avgTime}} 秒</text></view>
+    </view>
+    <view class="btn btn-primary" bindtap="restart">再来一局</view>
+    <view class="btn btn-ghost" bindtap="goHome">返回首页</view>
+  </view>
+
+  <!-- ===== 进阶失败 ===== -->
+  <view class="result result-failed" wx:if="{{phase === 'failed'}}">
+    <view class="result-emoji">💥</view>
+    <view class="result-title">倒在了第 {{failedIndex}} 题</view>
+    <view class="fail-zero-top">进阶模式一错归零，本局不得分</view>
+    <view class="fail-card">
+      <view class="fail-correct-label">正确答案</view>
+      <view class="expr fail-correct">
+        <block wx:for="{{failedCorrectTokens}}" wx:key="index">
+          <text wx:if="{{item.t === 'text'}}" class="tk">{{item.v}}</text>
+          <view wx:elif="{{item.t === 'frac'}}" class="frac">
+            <text class="fn">{{item.n}}</text>
+            <text class="fd">{{item.d}}</text>
+          </view>
+          <text wx:elif="{{item.t === 'op'}}" class="op">{{item.v}}</text>
+          <text wx:elif="{{item.t === 'paren'}}" class="paren">{{item.v}}</text>
+        </block>
+      </view>
+      <view class="fail-trap" wx:if="{{failedTrap}}">💡 {{failedTrap}}</view>
+      <view class="fail-trap" wx:if="{{failedTimedOut}}">⏰ 超时也算错哦</view>
+    </view>
+    <view class="btn btn-primary" bindtap="goNormal">回闯关模式练习</view>
+    <view class="btn btn-ghost" bindtap="goHome">返回首页</view>
+  </view>
+
+</view>

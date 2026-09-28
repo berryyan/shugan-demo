@@ -1,0 +1,396 @@
+/* quiz 页：逐项复刻网页版 QuizRunner（rem=16px 基准换算，vh/clamp 随屏高缩放）
+   expr/frac/op/paren 分数排版全局样式在 app.wxss */
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+}
+
+/* ---- 顶栏：退出 / 进度 / 模式 / 连对 / 得分 ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+.quit {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #475569;
+}
+.counter {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+.mode-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+.mode-review { background: #d1fae5; color: #059669; }
+.mode-normal { background: #e0e7ff; color: #4f46e5; }
+.mode-advanced { background: #fee2e2; color: #dc2626; }
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.streak {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f97316;
+}
+.earned {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+/* ---- 倒数进度条 ---- */
+.bar {
+  margin: 8px 16px 0;
+  height: 12px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+.bar-inner {
+  height: 100%;
+  border-radius: 999px;
+  background: #6366f1;
+  transition: width 0.1s linear;
+}
+.bar-urgent { background: #ef4444; }
+.secs {
+  margin: 4px 16px 0;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+.secs-urgent { color: #ef4444; }
+
+/* ---- 题面区（随屏高缩放，矮屏可滚动不裁切） ---- */
+.prompt-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+.requirement {
+  font-size: clamp(13px, 2.2vh, 16px);
+  font-weight: 500;
+  color: #64748b;
+}
+.prompt-outer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.prompt-inner {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transform-origin: center center;
+  font-size: clamp(36px, 10vh, 72px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+.prompt-inner .frac { font-size: clamp(36px, 10vh, 72px); }
+.eq-mark { color: #94a3b8; font-size: 16px; }
+.vsq { color: #cbd5e1; }
+
+/* ---- 复习模式：填空显示框 ---- */
+.input-wrap {
+  position: relative;
+  margin-top: 4px;
+}
+.input-box {
+  min-width: 224px;
+  max-width: 100%;
+  padding: 0 24px;
+  height: clamp(48px, 10vh, 96px);
+  border-radius: 24px;
+  border: 4px solid #6ee7b7;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.input-bad { border-color: #fca5a5; background: #fef2f2; }
+.input-expr {
+  font-size: clamp(28px, 7vh, 60px);
+  font-weight: 900;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+.input-expr .frac { font-size: clamp(28px, 7vh, 60px); }
+.input-expr .fn, .input-expr .fd {
+  min-height: 1em;
+  min-width: 0.7em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 幽灵框：分数槽空位占位（按下分数线/带分数键立即出现骨架） */
+.ghost {
+  width: 0.55em;
+  height: 0.75em;
+  border-radius: 3px;
+  border: 2px dashed #a7f3d0;
+  background: #ecfdf5;
+}
+.input-bad .ghost { border-color: #fca5a5; background: #fff; }
+.input-ph {
+  font-size: clamp(20px, 4vh, 36px);
+  font-weight: 700;
+  color: #cbd5e1;
+}
+.clear-btn {
+  position: absolute;
+  right: -12px;
+  top: -12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #64748b;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+/* ---- 即时反馈条（单行 pill）：外层固定槽位，出现/消失不引起布局跳动 ---- */
+.feedback-slot {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.feedback {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  max-width: 100%;
+}
+.fb-good { background: #d1fae5; color: #047857; }
+.fb-bad { background: #fee2e2; color: #dc2626; }
+.fb-plain { background: #f1f5f9; color: #64748b; }
+
+/* ---- 复习模式：数字键盘 ---- */
+.keypad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px 24px;
+  max-width: 448px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.key {
+  width: calc((100% - 16px) / 3);
+  height: clamp(40px, 7vh, 64px);
+  border-radius: 16px;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+.key-hover { transform: scale(0.95); }
+.key-label {
+  font-size: clamp(20px, 3.5vh, 30px);
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1.1;
+}
+.key-label-small { font-size: clamp(14px, 2.8vh, 20px); }
+.key-subtext {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.key-fn .key-label { color: #475569; }
+.key-submit {
+  background: #059669;
+  border-color: #059669;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+}
+.key-submit .key-label, .key-submit { color: #fff; }
+.key-submit { font-size: clamp(20px, 3.5vh, 24px); font-weight: 900; }
+
+/* ---- 闯关 / 进阶：固定 4 选项 ---- */
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 16px 24px;
+  max-width: 448px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.choice {
+  width: calc((100% - 12px) / 2);
+  height: clamp(56px, 11vh, 80px);
+  border-radius: 16px;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 4px;
+  transition: transform 0.1s;
+}
+.choice-hover { transform: scale(0.95); }
+.choice-expr {
+  font-size: clamp(24px, 5vh, 36px);
+  font-weight: 900;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+.choice-expr .frac { font-size: clamp(24px, 5vh, 36px); }
+.choice-correct { background: #10b981; border-color: #10b981; }
+.choice-correct .choice-expr, .choice-correct .tk, .choice-correct .op, .choice-correct .paren,
+.choice-correct .fn, .choice-correct .fd { color: #fff; }
+.choice-correct .fn { border-bottom-color: #fff; }
+.choice-wrong { background: #ef4444; border-color: #ef4444; }
+.choice-wrong .choice-expr, .choice-wrong .tk, .choice-wrong .op, .choice-wrong .paren,
+.choice-wrong .fn, .choice-wrong .fd { color: #fff; }
+.choice-wrong .fn { border-bottom-color: #fff; }
+.choice-dim { background: #fff; border-color: #e2e8f0; }
+.choice-dim .choice-expr, .choice-dim .tk, .choice-dim .fn, .choice-dim .fd { color: #cbd5e1; }
+.choice-dim .fn { border-bottom-color: #cbd5e1; }
+.choice-grey { background: #f1f5f9; border-color: #e2e8f0; box-shadow: none; }
+.choice-grey .choice-expr, .choice-grey .tk, .choice-grey .fn, .choice-grey .fd { color: #94a3b8; }
+.choice-grey .fn { border-bottom-color: #94a3b8; }
+.trap {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.9;
+  color: inherit;
+  text-align: center;
+}
+.choice-wrong .trap { color: #fff; }
+.choice-grey .trap { color: #94a3b8; }
+
+/* ---- 结算 / 失败 ---- */
+.result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 12px;
+}
+.result-failed { background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); }
+.result-emoji { font-size: 60px; }
+.result-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+.result-score {
+  font-size: 40px;
+  font-weight: 900;
+  color: #4f46e5;
+}
+.result-rows {
+  width: 100%;
+  max-width: 384px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  padding: 16px 24px;
+  margin-bottom: 12px;
+}
+.rrow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: #64748b;
+  padding: 8px 0;
+}
+.rrow text:last-child { font-weight: 700; color: #1e293b; }
+.fail-zero-top {
+  font-size: 15px;
+  color: #64748b;
+}
+.fail-card {
+  width: 100%;
+  max-width: 384px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.fail-correct-label { font-size: 14px; color: #94a3b8; }
+.fail-correct {
+  font-size: 36px;
+  font-weight: 900;
+  color: #059669;
+}
+.fail-correct .frac { font-size: 36px; }
+.fail-trap { font-size: 14px; color: #ef4444; }
+.btn {
+  width: 100%;
+  max-width: 384px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  transition: transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: #4f46e5;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+.btn-ghost {
+  background: #fff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+}

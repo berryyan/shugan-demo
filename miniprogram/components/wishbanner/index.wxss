@@ -1,0 +1,97 @@
+.wb {
+  margin: 0 16px 12px;
+  border-radius: 16px;
+  padding: 14px;
+  background: #fff;
+  border: 2px solid #fde68a;
+  box-sizing: border-box;
+}
+.wb-reached {
+  background: #fffbeb;
+  border-color: #fbbf24;
+  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.25);
+}
+.wb-hover { transform: scale(0.98); }
+.wb-row { display: flex; align-items: center; gap: 8px; }
+.wb-gift { font-size: 18px; }
+.wb-text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.wb-state { font-size: 14px; font-weight: 900; color: #94a3b8; }
+.wb-state-hot { color: #d97706; }
+.wb-bar {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  overflow: hidden;
+}
+.wb-bar-inner {
+  height: 100%;
+  border-radius: 999px;
+  background: #fbbf24;
+  transition: width 0.3s;
+}
+.wb-bar-hot { background: #f59e0b; }
+
+/* 兑换成功 */
+.redeemed {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  text-align: center;
+}
+.redeemed-emoji { font-size: 30px; }
+.redeemed-title { font-weight: 900; color: #047857; font-size: 16px; margin-top: 4px; }
+.redeemed-sub { font-size: 13px; color: #059669; margin-top: 4px; }
+.redeemed-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 24px;
+  border-radius: 12px;
+  background: #059669;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* 弹窗 */
+.mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.dialog {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+.dialog-emoji { font-size: 40px; }
+.dialog-title { font-size: 18px; font-weight: 900; color: #1e293b; margin-top: 8px; }
+.dialog-sub { font-size: 14px; color: #64748b; margin-top: 8px; white-space: pre-line; }
+.dialog-btns { display: flex; gap: 12px; margin-top: 20px; }
+.dlg-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.dlg-cancel { background: #f1f5f9; color: #64748b; }
+.dlg-ok { background: #f59e0b; color: #fff; }

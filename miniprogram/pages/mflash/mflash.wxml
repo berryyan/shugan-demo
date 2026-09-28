@@ -1,0 +1,67 @@
+<view class="page">
+  <view class="header">
+    <view class="back" bindtap="goHall">‹</view>
+    <view class="title">{{meta.icon}} {{meta.title}}</view>
+    <view class="balance">余额 {{points}}</view>
+  </view>
+
+  <!-- 选关 -->
+  <view class="main" wx:if="{{phase === 'pick'}}">
+    <view class="desc">{{meta.description}}</view>
+    <view class="lv-grid">
+      <view
+        wx:for="{{levelCards}}"
+        wx:key="index"
+        class="lv-card {{item.active ? 'lv-active' : ''}} {{item.locked ? 'lv-locked' : ''}}"
+        data-i="{{index}}"
+        bindtap="pickLevel"
+      >
+        <view class="lv-title">{{item.locked ? '🔒 ' : ''}}{{item.title}}</view>
+        <view class="lv-hint">{{item.hint}}</view>
+        <view wx:if="{{item.grade}}" class="lv-grade grade-{{item.grade}}">{{item.grade}}</view>
+      </view>
+    </view>
+    <view class="start-btn {{feeOk ? '' : 'start-disabled'}}" bindtap="startGame">
+      {{feeOk ? '支付 ' + meta.entryFee + ' 积分 · 挑战' + levelCards[level].title : '积分不足'}}
+    </view>
+    <view class="rule-hint">S=+30 A=+24 B=+18 C=+12 D=+8 E=+4 F=+0</view>
+  </view>
+
+  <!-- 展示数字 -->
+  <view class="main" wx:if="{{phase === 'show'}}">
+    <view class="stage-hint">记住这串数字（{{seq.length}} 位 · {{showSecs}} 秒）</view>
+    <view class="seq-row">
+      <text wx:for="{{seq}}" wx:key="index" class="seq-digit size-{{seq.length}}">{{item}}</text>
+    </view>
+    <view class="shrink-bar">
+      <view class="shrink-inner" style="animation-duration:{{showMs}}ms"></view>
+    </view>
+  </view>
+
+  <!-- 输入 -->
+  <view class="main" wx:if="{{phase === 'input'}}">
+    <view class="stage-hint">按顺序输入（{{input.length}}/{{seq.length}}）· 越快评级越高</view>
+    <view class="input-display">{{inputText}}</view>
+    <view class="pad">
+      <view wx:for="{{[1,2,3,4,5,6,7,8,9]}}" wx:key="index" class="pad-key" data-d="{{item}}" hover-class="pad-hover" bindtap="tapDigit">{{item}}</view>
+      <view class="pad-key pad-back" hover-class="pad-hover" bindtap="tapBack">⌫</view>
+      <view class="pad-key" data-d="{{0}}" hover-class="pad-hover" bindtap="tapDigit">0</view>
+      <view class="pad-blank"></view>
+    </view>
+  </view>
+
+  <!-- 结算 -->
+  <view class="main" wx:if="{{phase === 'over'}}">
+    <view class="big-grade grade-{{grade}}">{{grade}}</view>
+    <view class="over-title">{{grade === 'F' ? '记忆断线了…' : levelCards[level].title + '通过！'}}</view>
+    <view class="over-sub" wx:if="{{grade === 'F'}}">答错一位就是 F，再练一次吧</view>
+    <view class="over-sub" wx:else>
+      获得 <text class="over-reward">+{{reward}}</text> 积分{{newUnlock ? '，下一关已解锁！' : ''}}
+    </view>
+    <view class="over-answer">答案：{{seqText}}</view>
+    <view class="over-btns">
+      <view class="btn-white" bindtap="again">再来一次</view>
+      <view class="btn-ghost" bindtap="goHall">返回游戏厅</view>
+    </view>
+  </view>
+</view>

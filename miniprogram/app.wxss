@@ -1,0 +1,37 @@
+page {
+  background: #eef2ff;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  color: #1e293b;
+}
+
+.expr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.expr .tk { font-weight: 900; }
+.expr .op { color: #818cf8; font-weight: 900; margin: 0 8rpx; }
+.expr .paren { color: #94a3b8; font-weight: 900; }
+.expr .vsq { color: #cbd5e1; font-weight: 900; margin: 0 12rpx; }
+.expr .frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin: 0 4rpx;
+  vertical-align: middle;
+}
+.expr .frac .fn {
+  font-size: 0.62em;
+  font-weight: 700;
+  padding: 0 6rpx 4rpx;
+  border-bottom: 3rpx solid currentColor;
+}
+.expr .frac .fd {
+  font-size: 0.62em;
+  font-weight: 700;
+  padding: 4rpx 6rpx 0;
+}

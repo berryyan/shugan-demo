@@ -1,0 +1,75 @@
+import type { MiniGameMeta } from '@/core/types';
+import { HGE2_TIERS, tierToMeta } from './hge2/stages';
+
+/** 小游戏注册表：新游戏在这里登记元信息，游戏厅自动展示。HGE2 复刻档排在最前 */
+export const MINI_GAMES: MiniGameMeta[] = [
+  ...HGE2_TIERS.map((t, i) => tierToMeta(t, i)),
+  {
+    id: 'memory-flash',
+    title: '数字闪现',
+    icon: '🧠',
+    ability: '记忆力',
+    entryFee: 15,
+    description: '数字一闪而过，凭记忆按顺序复现。6 关逐级加速！',
+    scoreLabel: '等级分',
+    levels: [
+      { title: '第 1 关', hint: '4 位数字 · 展示 1.8 秒' },
+      { title: '第 2 关', hint: '5 位数字 · 展示 2.1 秒' },
+      { title: '第 3 关', hint: '6 位数字 · 展示 2.4 秒' },
+      { title: '第 4 关', hint: '6 位数字 · 展示 1.8 秒' },
+      { title: '第 5 关', hint: '6 位数字 · 展示 1.2 秒' },
+      { title: '第 6 关', hint: '6 位数字 · 只闪 0.8 秒！' },
+    ],
+  },
+  {
+    id: 'reaction-tap',
+    title: '极速点击',
+    icon: '⚡',
+    ability: '反应力',
+    entryFee: 15,
+    description: '变绿瞬间立刻点击！后面关卡会出现假信号，稳住别被骗。',
+    scoreLabel: '等级分',
+    levels: [
+      { title: '第 1 关', hint: '3 次平均反应 · 标准节奏' },
+      { title: '第 2 关', hint: '3 次平均反应 · 更快拿 S' },
+      { title: '第 3 关', hint: '等待时间更飘忽' },
+      { title: '第 4 关', hint: '等待时间极飘忽' },
+      { title: '第 5 关', hint: '加入假信号：黄光不能点！' },
+      { title: '第 6 关', hint: '假信号 + 最严评级' },
+    ],
+  },
+  {
+    id: 'match-pairs',
+    title: '等值扑克',
+    icon: '🃏',
+    ability: '反应力',
+    entryFee: 15,
+    description: '每张牌是同一个数的不同写法（½、0.5、50%、2/4），60 秒内找出等值的一对！',
+    scoreLabel: '对数',
+    levels: [
+      { title: '第 1 关', hint: '4 张牌 · 分数与小数' },
+      { title: '第 2 关', hint: '4 张牌 · 加入未约分形态（2/4）' },
+      { title: '第 3 关', hint: '4 张牌 · 加入百分数（50%）' },
+      { title: '第 4 关', hint: '6 张牌 · 眼花缭乱' },
+      { title: '第 5 关', hint: '6 张牌 · 加入带分数/假分数' },
+      { title: '第 6 关', hint: '6 张牌 · 大师级评级线' },
+    ],
+  },
+  {
+    id: 'bigger-tap',
+    title: '谁更大',
+    icon: '⚖️',
+    ability: '反应力',
+    entryFee: 15,
+    description: '两个分数/小数快闪，以最快速度点更大的那一边！',
+    scoreLabel: '等级分',
+    levels: [
+      { title: '第 1 关', hint: '10 题 · 常考分母' },
+      { title: '第 2 关', hint: '10 题 · 半数换成小数' },
+      { title: '第 3 关', hint: '12 题 · 分母加入 3' },
+      { title: '第 4 关', hint: '12 题 · 差距更小' },
+      { title: '第 5 关', hint: '15 题 · 差值 0.04 起' },
+      { title: '第 6 关', hint: '15 题 · 大师级，差值 0.03 起' },
+    ],
+  },
+];

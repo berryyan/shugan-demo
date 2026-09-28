@@ -1,0 +1,26 @@
+name: Shugan
+options:
+  bundleIdPrefix: com.berryyan
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  Shugan:
+    type: application
+    platform: iOS
+    sources:
+      - path: Shugan
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.berryyan.shugan
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: 数学不再难
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations~ipad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO

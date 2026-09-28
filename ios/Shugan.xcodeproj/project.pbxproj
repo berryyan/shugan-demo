@@ -1,0 +1,427 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		135ECD044B8D81E9C0CCA865 /* Registry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E41D5F20348A97D6DA469B /* Registry.swift */; };
+		2668DAFE49003CD005614E98 /* InputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60850F1BD74C268D8C9595D6 /* InputParser.swift */; };
+		29F700A4BE9702D62FBB07E0 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A43F9FDD963A719AC75E0885 /* Settings.swift */; };
+		2D5B88A4DD31C8EA785DE81B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BC3D247D8B4F362789A923 /* SettingsView.swift */; };
+		2DF9875F5BBEEC172168E069 /* QuizRunnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5621B86B6588D8D223FE2954 /* QuizRunnerView.swift */; };
+		4A9D2D64AD129B40382D8822 /* RNG.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF37F6EF304AA683D2C55004 /* RNG.swift */; };
+		57E43246007AC221D3988CD2 /* BankAdvanced.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */; };
+		595F139A04EA3F737C7BF008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C78618A36CB7088B4227AE5 /* Assets.xcassets */; };
+		5DADECA1217410A89F395D04 /* BankConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1725D688F35AE489BE0289 /* BankConvert.swift */; };
+		60A5BDC0980CF6965D53EB0D /* QuizIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */; };
+		7CBCA74413AD899122ED07B5 /* BankArith.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D95E08DB57B444EDA88B69D /* BankArith.swift */; };
+		7EBE4C4C751D39F5F155D3B3 /* WishBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39280F5F4C9DB5081F0B325B /* WishBannerView.swift */; };
+		88F5C8E4C62AB61D00617E01 /* StudyLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5E7383AE55785F14B2F086 /* StudyLog.swift */; };
+		9EA0D0E46101800C887C65E9 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D86A9B31082B5885F22D41E /* Theme.swift */; };
+		A7094626598D8E8F3E7F14AB /* Scoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A421C19BDA2122EF882334 /* Scoring.swift */; };
+		AD69624A799E4AC6805EE7A5 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB82E52EAF9EA8606E876D60 /* Types.swift */; };
+		BBBCAA1A5A352C2EC89E180B /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0573EE3BCC31E38299B69D0 /* Wallet.swift */; };
+		C69B7961CEA1CBE8078C8B76 /* MathExprView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */; };
+		D9F93EC2A9F777AC10711B47 /* ShuganApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C537E3B29F07D4E4EEDBD131 /* ShuganApp.swift */; };
+		E3E574E2C0B117F4950DF544 /* BankSigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */; };
+		E45424107374908575E4A151 /* BankSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C098C26900226946EDCC802 /* BankSupport.swift */; };
+		E730D4D60756FBE80E0DD2BF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EF4572D7ECDE87B65E6E7F /* HomeView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09E41D5F20348A97D6DA469B /* Registry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Registry.swift; sourceTree = "<group>"; };
+		0C098C26900226946EDCC802 /* BankSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSupport.swift; sourceTree = "<group>"; };
+		1376C17C681324486EFCA660 /* Shugan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Shugan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExprView.swift; sourceTree = "<group>"; };
+		2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizIntroView.swift; sourceTree = "<group>"; };
+		2D95E08DB57B444EDA88B69D /* BankArith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankArith.swift; sourceTree = "<group>"; };
+		39280F5F4C9DB5081F0B325B /* WishBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WishBannerView.swift; sourceTree = "<group>"; };
+		48EF4572D7ECDE87B65E6E7F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		5621B86B6588D8D223FE2954 /* QuizRunnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizRunnerView.swift; sourceTree = "<group>"; };
+		60850F1BD74C268D8C9595D6 /* InputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputParser.swift; sourceTree = "<group>"; };
+		7C78618A36CB7088B4227AE5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7D86A9B31082B5885F22D41E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		A43F9FDD963A719AC75E0885 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSigned.swift; sourceTree = "<group>"; };
+		BB5E7383AE55785F14B2F086 /* StudyLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyLog.swift; sourceTree = "<group>"; };
+		C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankAdvanced.swift; sourceTree = "<group>"; };
+		C537E3B29F07D4E4EEDBD131 /* ShuganApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShuganApp.swift; sourceTree = "<group>"; };
+		CB82E52EAF9EA8606E876D60 /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		D0573EE3BCC31E38299B69D0 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
+		D7A421C19BDA2122EF882334 /* Scoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scoring.swift; sourceTree = "<group>"; };
+		E0BC3D247D8B4F362789A923 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		EB1725D688F35AE489BE0289 /* BankConvert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankConvert.swift; sourceTree = "<group>"; };
+		EF37F6EF304AA683D2C55004 /* RNG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNG.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		091059BACCB46D3601CC0925 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1376C17C681324486EFCA660 /* Shugan.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		19D70B382B1A3F0AD4CDDE62 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */,
+				7D86A9B31082B5885F22D41E /* Theme.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		3C7F727EF3EF14C5EA8437D7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C537E3B29F07D4E4EEDBD131 /* ShuganApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		4F3FFC5C299E666A12158B09 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				48EF4572D7ECDE87B65E6E7F /* HomeView.swift */,
+				2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */,
+				5621B86B6588D8D223FE2954 /* QuizRunnerView.swift */,
+				E0BC3D247D8B4F362789A923 /* SettingsView.swift */,
+				39280F5F4C9DB5081F0B325B /* WishBannerView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A3DCB4B4D04D93C9B2522508 /* Shugan */ = {
+			isa = PBXGroup;
+			children = (
+				7C78618A36CB7088B4227AE5 /* Assets.xcassets */,
+				3C7F727EF3EF14C5EA8437D7 /* App */,
+				CC662961B1BB68F1EBEA1AE9 /* Core */,
+				19D70B382B1A3F0AD4CDDE62 /* UI */,
+				4F3FFC5C299E666A12158B09 /* Views */,
+			);
+			path = Shugan;
+			sourceTree = "<group>";
+		};
+		CC662961B1BB68F1EBEA1AE9 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */,
+				2D95E08DB57B444EDA88B69D /* BankArith.swift */,
+				EB1725D688F35AE489BE0289 /* BankConvert.swift */,
+				B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */,
+				0C098C26900226946EDCC802 /* BankSupport.swift */,
+				60850F1BD74C268D8C9595D6 /* InputParser.swift */,
+				09E41D5F20348A97D6DA469B /* Registry.swift */,
+				EF37F6EF304AA683D2C55004 /* RNG.swift */,
+				D7A421C19BDA2122EF882334 /* Scoring.swift */,
+				A43F9FDD963A719AC75E0885 /* Settings.swift */,
+				BB5E7383AE55785F14B2F086 /* StudyLog.swift */,
+				CB82E52EAF9EA8606E876D60 /* Types.swift */,
+				D0573EE3BCC31E38299B69D0 /* Wallet.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		CFD20915FC6C7D0C1FA0B779 = {
+			isa = PBXGroup;
+			children = (
+				A3DCB4B4D04D93C9B2522508 /* Shugan */,
+				091059BACCB46D3601CC0925 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2FDB6146C6FA4DA602C82D1F /* Shugan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EAF50AD72B669944F8349B98 /* Build configuration list for PBXNativeTarget "Shugan" */;
+			buildPhases = (
+				B9FE7B45CFA9E807918837B8 /* Sources */,
+				7ECB2DCD628538C91282DBD8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Shugan;
+			packageProductDependencies = (
+			);
+			productName = Shugan;
+			productReference = 1376C17C681324486EFCA660 /* Shugan.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3C78AF4171B9F4D3E6CD78C4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 2DECFAF864021AAC1F5DED62 /* Build configuration list for PBXProject "Shugan" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CFD20915FC6C7D0C1FA0B779;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 091059BACCB46D3601CC0925 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2FDB6146C6FA4DA602C82D1F /* Shugan */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7ECB2DCD628538C91282DBD8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				595F139A04EA3F737C7BF008 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B9FE7B45CFA9E807918837B8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57E43246007AC221D3988CD2 /* BankAdvanced.swift in Sources */,
+				7CBCA74413AD899122ED07B5 /* BankArith.swift in Sources */,
+				5DADECA1217410A89F395D04 /* BankConvert.swift in Sources */,
+				E3E574E2C0B117F4950DF544 /* BankSigned.swift in Sources */,
+				E45424107374908575E4A151 /* BankSupport.swift in Sources */,
+				E730D4D60756FBE80E0DD2BF /* HomeView.swift in Sources */,
+				2668DAFE49003CD005614E98 /* InputParser.swift in Sources */,
+				C69B7961CEA1CBE8078C8B76 /* MathExprView.swift in Sources */,
+				60A5BDC0980CF6965D53EB0D /* QuizIntroView.swift in Sources */,
+				2DF9875F5BBEEC172168E069 /* QuizRunnerView.swift in Sources */,
+				4A9D2D64AD129B40382D8822 /* RNG.swift in Sources */,
+				135ECD044B8D81E9C0CCA865 /* Registry.swift in Sources */,
+				A7094626598D8E8F3E7F14AB /* Scoring.swift in Sources */,
+				29F700A4BE9702D62FBB07E0 /* Settings.swift in Sources */,
+				2D5B88A4DD31C8EA785DE81B /* SettingsView.swift in Sources */,
+				D9F93EC2A9F777AC10711B47 /* ShuganApp.swift in Sources */,
+				88F5C8E4C62AB61D00617E01 /* StudyLog.swift in Sources */,
+				9EA0D0E46101800C887C65E9 /* Theme.swift in Sources */,
+				AD69624A799E4AC6805EE7A5 /* Types.swift in Sources */,
+				BBBCAA1A5A352C2EC89E180B /* Wallet.swift in Sources */,
+				7EBE4C4C751D39F5F155D3B3 /* WishBannerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4EB4497DBF4BA86405F23EB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		5C0F3467DC647E592EB8186C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A22BBD148D27E43120C1AF16 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations~ipad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.berryyan.shugan;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		C187EE56736739AC2964C7AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations~ipad" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.berryyan.shugan;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2DECFAF864021AAC1F5DED62 /* Build configuration list for PBXProject "Shugan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5C0F3467DC647E592EB8186C /* Debug */,
+				4EB4497DBF4BA86405F23EB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EAF50AD72B669944F8349B98 /* Build configuration list for PBXNativeTarget "Shugan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C187EE56736739AC2964C7AB /* Debug */,
+				A22BBD148D27E43120C1AF16 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3C78AF4171B9F4D3E6CD78C4 /* Project object */;
+}

@@ -8,7 +8,7 @@
  * v2（2026-09-30）：全是个位数，无小数；错 2 次后答对保底 0（不扣分）。
  * 完整规则文档见 docs/积分规则-v2.md
  */
-import type { QuizMode } from './types';
+import type { QuizMode } from './types.ts';
 
 export interface ScoreInput {
   mode: QuizMode;

@@ -25,7 +25,8 @@ private func groups(_ s: String, _ pattern: String) -> [String]? {
     guard let re = try? NSRegularExpression(pattern: pattern),
           let m = re.firstMatch(in: s, range: NSRange(s.startIndex..., in: s)) else { return nil }
     var out: [String] = []
-    for i in 1..<re.numberOfCaptureGroups {
+    guard re.numberOfCaptureGroups >= 1 else { return nil }
+    for i in 1...re.numberOfCaptureGroups {
         if let r = Range(m.range(at: i), in: s) { out.append(String(s[r])) } else { return nil }
     }
     return out

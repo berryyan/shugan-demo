@@ -34,7 +34,7 @@
 /* Begin PBXFileReference section */
 		09E41D5F20348A97D6DA469B /* Registry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Registry.swift; sourceTree = "<group>"; };
 		0C098C26900226946EDCC802 /* BankSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSupport.swift; sourceTree = "<group>"; };
-		1376C17C681324486EFCA660 /* Shugan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Shugan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1376C17C681324486EFCA660 /* Shugan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shugan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExprView.swift; sourceTree = "<group>"; };
 		2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizIntroView.swift; sourceTree = "<group>"; };
 		2D95E08DB57B444EDA88B69D /* BankArith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankArith.swift; sourceTree = "<group>"; };
@@ -164,8 +164,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 2DECFAF864021AAC1F5DED62 /* Build configuration list for PBXProject "Shugan" */;
 			developmentRegion = en;
@@ -353,7 +351,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -379,7 +378,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

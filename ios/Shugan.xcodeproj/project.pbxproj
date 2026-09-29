@@ -15,10 +15,13 @@
 		4A9D2D64AD129B40382D8822 /* RNG.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF37F6EF304AA683D2C55004 /* RNG.swift */; };
 		57E43246007AC221D3988CD2 /* BankAdvanced.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */; };
 		595F139A04EA3F737C7BF008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C78618A36CB7088B4227AE5 /* Assets.xcassets */; };
+		5B209A0B6D031571B642C015 /* wrong.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 12458CC644B26EA0BD6DC7D9 /* wrong.mp3 */; };
 		5DADECA1217410A89F395D04 /* BankConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1725D688F35AE489BE0289 /* BankConvert.swift */; };
 		60A5BDC0980CF6965D53EB0D /* QuizIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */; };
+		73683132AEC9E5ECFB4642AE /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D842AA810CBD30CC707CDCE /* SoundPlayer.swift */; };
 		7CBCA74413AD899122ED07B5 /* BankArith.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D95E08DB57B444EDA88B69D /* BankArith.swift */; };
 		7EBE4C4C751D39F5F155D3B3 /* WishBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39280F5F4C9DB5081F0B325B /* WishBannerView.swift */; };
+		865560D7FC1E1AAA52838847 /* correct.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 52058D2935E44C2F5DA6FF99 /* correct.mp3 */; };
 		88F5C8E4C62AB61D00617E01 /* StudyLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5E7383AE55785F14B2F086 /* StudyLog.swift */; };
 		9EA0D0E46101800C887C65E9 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D86A9B31082B5885F22D41E /* Theme.swift */; };
 		A7094626598D8E8F3E7F14AB /* Scoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A421C19BDA2122EF882334 /* Scoring.swift */; };
@@ -26,6 +29,7 @@
 		BBBCAA1A5A352C2EC89E180B /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0573EE3BCC31E38299B69D0 /* Wallet.swift */; };
 		C69B7961CEA1CBE8078C8B76 /* MathExprView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */; };
 		D9F93EC2A9F777AC10711B47 /* ShuganApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C537E3B29F07D4E4EEDBD131 /* ShuganApp.swift */; };
+		DAF9B780234744CC1130738A /* perfect.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 150E26E3C2A945932788E1AB /* perfect.mp3 */; };
 		E3E574E2C0B117F4950DF544 /* BankSigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */; };
 		E45424107374908575E4A151 /* BankSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C098C26900226946EDCC802 /* BankSupport.swift */; };
 		E730D4D60756FBE80E0DD2BF /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EF4572D7ECDE87B65E6E7F /* HomeView.swift */; };
@@ -34,16 +38,20 @@
 /* Begin PBXFileReference section */
 		09E41D5F20348A97D6DA469B /* Registry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Registry.swift; sourceTree = "<group>"; };
 		0C098C26900226946EDCC802 /* BankSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSupport.swift; sourceTree = "<group>"; };
-		1376C17C681324486EFCA660 /* Shugan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shugan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		12458CC644B26EA0BD6DC7D9 /* wrong.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = wrong.mp3; sourceTree = "<group>"; };
+		1376C17C681324486EFCA660 /* Shugan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Shugan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		150E26E3C2A945932788E1AB /* perfect.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = perfect.mp3; sourceTree = "<group>"; };
 		1CA3E297FA759FE12FF0FC77 /* MathExprView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExprView.swift; sourceTree = "<group>"; };
 		2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizIntroView.swift; sourceTree = "<group>"; };
 		2D95E08DB57B444EDA88B69D /* BankArith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankArith.swift; sourceTree = "<group>"; };
 		39280F5F4C9DB5081F0B325B /* WishBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WishBannerView.swift; sourceTree = "<group>"; };
 		48EF4572D7ECDE87B65E6E7F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		52058D2935E44C2F5DA6FF99 /* correct.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = correct.mp3; sourceTree = "<group>"; };
 		5621B86B6588D8D223FE2954 /* QuizRunnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizRunnerView.swift; sourceTree = "<group>"; };
 		60850F1BD74C268D8C9595D6 /* InputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputParser.swift; sourceTree = "<group>"; };
 		7C78618A36CB7088B4227AE5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7D86A9B31082B5885F22D41E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		9D842AA810CBD30CC707CDCE /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		A43F9FDD963A719AC75E0885 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSigned.swift; sourceTree = "<group>"; };
 		BB5E7383AE55785F14B2F086 /* StudyLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyLog.swift; sourceTree = "<group>"; };
@@ -95,12 +103,31 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		6004E75084C3A513324DCBB4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6B6FB78B7E624156A3F1F9F3 /* Sounds */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		6B6FB78B7E624156A3F1F9F3 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				52058D2935E44C2F5DA6FF99 /* correct.mp3 */,
+				150E26E3C2A945932788E1AB /* perfect.mp3 */,
+				12458CC644B26EA0BD6DC7D9 /* wrong.mp3 */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
 		A3DCB4B4D04D93C9B2522508 /* Shugan */ = {
 			isa = PBXGroup;
 			children = (
 				7C78618A36CB7088B4227AE5 /* Assets.xcassets */,
 				3C7F727EF3EF14C5EA8437D7 /* App */,
 				CC662961B1BB68F1EBEA1AE9 /* Core */,
+				6004E75084C3A513324DCBB4 /* Resources */,
 				19D70B382B1A3F0AD4CDDE62 /* UI */,
 				4F3FFC5C299E666A12158B09 /* Views */,
 			);
@@ -120,6 +147,7 @@
 				EF37F6EF304AA683D2C55004 /* RNG.swift */,
 				D7A421C19BDA2122EF882334 /* Scoring.swift */,
 				A43F9FDD963A719AC75E0885 /* Settings.swift */,
+				9D842AA810CBD30CC707CDCE /* SoundPlayer.swift */,
 				BB5E7383AE55785F14B2F086 /* StudyLog.swift */,
 				CB82E52EAF9EA8606E876D60 /* Types.swift */,
 				D0573EE3BCC31E38299B69D0 /* Wallet.swift */,
@@ -164,6 +192,12 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					2FDB6146C6FA4DA602C82D1F = {
+						DevelopmentTeam = RF285L848A;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 2DECFAF864021AAC1F5DED62 /* Build configuration list for PBXProject "Shugan" */;
 			developmentRegion = en;
@@ -190,6 +224,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				595F139A04EA3F737C7BF008 /* Assets.xcassets in Resources */,
+				865560D7FC1E1AAA52838847 /* correct.mp3 in Resources */,
+				DAF9B780234744CC1130738A /* perfect.mp3 in Resources */,
+				5B209A0B6D031571B642C015 /* wrong.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +253,7 @@
 				29F700A4BE9702D62FBB07E0 /* Settings.swift in Sources */,
 				2D5B88A4DD31C8EA785DE81B /* SettingsView.swift in Sources */,
 				D9F93EC2A9F777AC10711B47 /* ShuganApp.swift in Sources */,
+				73683132AEC9E5ECFB4642AE /* SoundPlayer.swift in Sources */,
 				88F5C8E4C62AB61D00617E01 /* StudyLog.swift in Sources */,
 				9EA0D0E46101800C887C65E9 /* Theme.swift in Sources */,
 				AD69624A799E4AC6805EE7A5 /* Types.swift in Sources */,
@@ -351,7 +389,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
@@ -378,7 +417,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";

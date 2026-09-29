@@ -77,7 +77,7 @@ struct QuizRunnerView: View {
             LinearGradient(colors: phase == .failed ? [.red50, .white] : [.indigo50, .white], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
         )
-        .onAppear { startRun() }
+        .onAppear { SoundPlayer.warmup(); startRun() }
         .onDisappear {
             advanceWork?.cancel()
             autoSubmitWork?.cancel()
@@ -143,6 +143,7 @@ struct QuizRunnerView: View {
         lastBreakdown = result.breakdown
         streak = result.newStreak
         earned += result.delta
+        SoundPlayer.play((choice?.correct ?? false) ? "correct" : "wrong")
         records.append(AnswerRecord(
             correct: choice?.correct ?? false,
             timedOut: timedOut,
@@ -160,6 +161,7 @@ struct QuizRunnerView: View {
         if index + 1 >= questions.count {
             phase = .done
             finalizeIfNeeded() // 积分在结算页一次性入账
+            if records.allSatisfy({ $0.correct }) { SoundPlayer.play("perfect") }
         } else {
             index += 1
             pickedId = nil
@@ -186,6 +188,7 @@ struct QuizRunnerView: View {
         earned += penalty
         streak = 0
         lastDelta = penalty
+        SoundPlayer.play("wrong")
         lastBreakdown = [
             "选错 \(penalty) · +\(Int(RETRY_BONUS_SEC))s",
             c.trap ?? "再想一想",
@@ -197,6 +200,7 @@ struct QuizRunnerView: View {
     private func failRun(_ choiceId: String?) {
         pickedId = choiceId
         phase = .failed
+        SoundPlayer.play("wrong")
         finalizeIfNeeded()
     }
 
@@ -226,6 +230,7 @@ struct QuizRunnerView: View {
         earned += penalty
         streak = 0
         lastDelta = penalty
+        SoundPlayer.play("wrong")
         lastBreakdown = [msg, "填错 \(penalty) · +\(Int(RETRY_BONUS_SEC))s", "还剩 \(RETRY_LIMIT - used + 1) 次机会"]
         input = "" // 答错自动清空，直接重输
     }

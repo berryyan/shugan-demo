@@ -1495,59 +1495,56 @@ const signedMulSkill: Skill = {
 
 /* ---------------- 有理数 1.4/1.5 + 巧算：乘方速记 / 分数小数混合 / 运算顺序 / 凑整巧算 ---------------- */
 
-/** 乘方速记：平方 11²~20²（40%）+ 立方 2³~6³（25%）+ (-a)² vs -a² 符号陷阱（35%） */
+/** 乘方速记（一阶段）：平方 1~10（35%）+ 立方 2~4（25%）各穿插 30% 符号陷阱 + (-1)ⁿ（25%）+ 高次幂（15%） */
 /** 整数 → 上标文本（支持多位指数，如 14 → ¹⁴） */
 const sup = (n: number): string => String(n).replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]);
 
 const genPowerFlash: QuestionGenerator = (rng) => {
   rngGlobal = rng;
-  // 2026-10-02 扩池：34 → 约 120 个不同题面（平方 11~20 / 立方 2~9 / 整十平方 /
-  // 高次幂秒答 / (-1)ⁿ 奇偶 / 符号陷阱底数加宽）
+  // 2026-10-02 一阶段（负数乘方专攻，用户拍板）：平方底数 1~10、立方底数 2~4，
+  // 正数为主、各 30% 穿插符号陷阱；(-1)ⁿ/-1ⁿ 加量到 25%；高次幂只剩 2⁴~2⁶、10²~10⁴。
+  // 11²~20²、整十平方、5³~6³ 拆到二阶段，规划见 docs/乘方速记两阶段规划.md
   const kind = rng();
-  if (kind < 0.28) {
-    const n = 11 + Math.floor(rng() * 10);
-    const v = n * n;
+  if (kind < 0.35) {
+    // 平方考核：底数 1~10，70% 正数平方，30% 符号陷阱
+    const a = 1 + Math.floor(rng() * 10);
+    if (rng() < 0.3) {
+      const inParens = rng() < 0.5;
+      const v = inParens ? a * a : -a * a;
+      const traps: Trap[] = [];
+      pushTextTrap(traps, -v * 10, inParens ? '负数的平方是正数' : '负号在平方外面：先算平方再添负号', v * 10);
+      pushTextTrap(traps, (inParens ? a * 2 : -a * 2) * 10, '平方是 a×a，不是 a×2', v * 10);
+      fillTextTraps(traps, v * 10);
+      return makeQuestion(text(inParens ? `(-${a})²` : `-${a}²`), '计算（看清负号位置）', text(String(v)), traps);
+    }
+    const v = a * a;
     const traps: Trap[] = [];
-    pushTextTrap(traps, n * 20, '平方是 n×n，不是 n×2', v * 10);
-    pushTextTrap(traps, (n - 1) * (n - 1) * 10, '记岔了：这是相邻的平方数', v * 10);
-    pushTextTrap(traps, (n + 1) * (n + 1) * 10, '记岔了：这是相邻的平方数', v * 10);
+    pushTextTrap(traps, a * 20, '平方是 a×a，不是 a×2', v * 10);
+    if (a > 1) pushTextTrap(traps, (a - 1) * (a - 1) * 10, '记岔了：这是相邻的平方数', v * 10);
+    pushTextTrap(traps, (a + 1) * (a + 1) * 10, '记岔了：这是相邻的平方数', v * 10);
     fillTextTraps(traps, v * 10);
-    return makeQuestion(text(`${n}²`), '秒答', text(String(v)), traps);
+    return makeQuestion(text(`${a}²`), '秒答', text(String(v)), traps);
   }
-  if (kind < 0.42) {
-    const n = 2 + Math.floor(rng() * 8);
-    const v = n * n * n;
+  if (kind < 0.6) {
+    // 立方考核：底数 2~4，70% 正数立方，30% 符号陷阱 (-a)³
+    const a = 2 + Math.floor(rng() * 3);
+    if (rng() < 0.3) {
+      const v = -a * a * a;
+      const traps: Trap[] = [];
+      pushTextTrap(traps, -v * 10, '负数的立方还是负数（三个负号）', v * 10);
+      pushTextTrap(traps, a * 30, '立方是 a×a×a，不是 a×3', v * 10);
+      fillTextTraps(traps, v * 10);
+      return makeQuestion(text(`(-${a})³`), '计算（看清符号）', text(String(v)), traps);
+    }
+    const v = a * a * a;
     const traps: Trap[] = [];
-    pushTextTrap(traps, n * 30, '立方是 n×n×n，不是 n×3', v * 10);
-    pushTextTrap(traps, n * n * 10, '这是平方，立方要再乘一个 n', v * 10);
+    pushTextTrap(traps, a * 30, '立方是 a×a×a，不是 a×3', v * 10);
+    pushTextTrap(traps, a * a * 10, '这是平方，立方要再乘一个 a', v * 10);
     fillTextTraps(traps, v * 10);
-    return makeQuestion(text(`${n}³`), '秒答', text(String(v)), traps);
+    return makeQuestion(text(`${a}³`), '秒答', text(String(v)), traps);
   }
-  if (kind < 0.52) {
-    // 整十平方 30²~90²：n² = (n/10)² 添两个 0
-    const n = (3 + Math.floor(rng() * 7)) * 10;
-    const v = n * n;
-    const traps: Trap[] = [];
-    pushTextTrap(traps, n * 20, '平方是 n×n，不是 n×2', v * 10);
-    pushTextTrap(traps, v, '少了一个 0：先算 3²=9，再添两个 0', v * 10);
-    pushTextTrap(traps, v * 100, '多了一个 0：先算 3²=9，再添两个 0', v * 10);
-    fillTextTraps(traps, v * 10);
-    return makeQuestion(text(`${n}²`), '秒答', text(String(v)), traps);
-  }
-  if (kind < 0.62) {
-    // 高次幂秒答：2⁴~2⁶、3⁴、10²~10⁴
-    const SPECIAL: [number, number][] = [[2, 4], [2, 5], [2, 6], [3, 4], [10, 2], [10, 3], [10, 4]];
-    const [b, e] = pick(rng, SPECIAL);
-    const v = Math.pow(b, e);
-    const traps: Trap[] = [];
-    pushTextTrap(traps, b * e * 10, '乘方是几个底数相乘，不是底数 × 指数', v * 10);
-    pushTextTrap(traps, (v / b) * 10, '少乘了一个底数', v * 10);
-    pushTextTrap(traps, v * b * 10, '多乘了一个底数', v * 10);
-    fillTextTraps(traps, v * 10);
-    return makeQuestion(text(`${b}${sup(e)}`), '秒答', text(String(v)), traps);
-  }
-  if (kind < 0.72) {
-    // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1
+  if (kind < 0.85) {
+    // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1（一阶段加量到 25%）
     const n = 10 + Math.floor(rng() * 30);
     const inParens = rng() < 0.5;
     const v = inParens ? (n % 2 === 0 ? 1 : -1) : -1;
@@ -1557,24 +1554,16 @@ const genPowerFlash: QuestionGenerator = (rng) => {
     fillTextTraps(traps, v * 10);
     return makeQuestion(text(inParens ? `(-1)${sup(n)}` : `-1${sup(n)}`), '秒答', text(String(v)), traps);
   }
-  // 符号陷阱：负号在不在括号里，结果天差地别
-  const sq = rng() < 0.7;
-  const a = sq ? 2 + Math.floor(rng() * 11) : 2 + Math.floor(rng() * 5);
-  const inParens = rng() < 0.5;
-  if (sq) {
-    const v = inParens ? a * a : -a * a;
-    const traps: Trap[] = [];
-    pushTextTrap(traps, -v * 10, inParens ? '负数的平方是正数' : '负号在平方外面：先算平方再添负号', v * 10);
-    pushTextTrap(traps, (inParens ? a * 2 : -a * 2) * 10, '平方是 a×a，不是 a×2', v * 10);
-    fillTextTraps(traps, v * 10);
-    return makeQuestion(text(inParens ? `(-${a})²` : `-${a}²`), '计算（看清负号位置）', text(String(v)), traps);
-  }
-  const v = -a * a * a;
+  // 高次幂秒答：2⁴~2⁶、10²~10⁴（15%）
+  const SPECIAL: [number, number][] = [[2, 4], [2, 5], [2, 6], [10, 2], [10, 3], [10, 4]];
+  const [b, e] = pick(rng, SPECIAL);
+  const v = Math.pow(b, e);
   const traps: Trap[] = [];
-  pushTextTrap(traps, -v * 10, '负数的立方还是负数（三个负号）', v * 10);
-  pushTextTrap(traps, a * 30, '立方是 a×a×a，不是 a×3', v * 10);
+  pushTextTrap(traps, b * e * 10, '乘方是几个底数相乘，不是底数 × 指数', v * 10);
+  pushTextTrap(traps, (v / b) * 10, '少乘了一个底数', v * 10);
+  pushTextTrap(traps, v * b * 10, '多乘了一个底数', v * 10);
   fillTextTraps(traps, v * 10);
-  return makeQuestion(text(`(-${a})³`), '计算（看清符号）', text(String(v)), traps);
+  return makeQuestion(text(`${b}${sup(e)}`), '秒答', text(String(v)), traps);
 };
 
 /* ---- 分数+小数混合四则：有理数精确计算（分子/分母对），答案择优呈现（整数/小数 > 带分数 > 分数） ---- */
@@ -1860,8 +1849,8 @@ const powerFlashSkill: Skill = {
   title: '乘方速记',
   intro: [
     '考核点：平方/立方秒答 + 负号位置辨析（教材 1.4）',
-    '平方 11²~20²（40%）、立方 2³~6³（25%）',
-    '符号陷阱 35%：(-3)² = 9 但 -3² = -9，负号在括号外先算平方！',
+    '一阶段：平方 1²~10²、立方 2³~4³、(-1)ⁿ 看指数奇偶、2⁴~2⁶ 与 10 的幂',
+    '符号陷阱穿插其中：(-3)² = 9 但 -3² = -9，负号在括号外先算平方！',
     '复习模式键盘有负号键',
   ],
   timeLimitSec: 6,

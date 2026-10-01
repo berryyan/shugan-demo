@@ -5,11 +5,25 @@ import Foundation
  * 乘方速记 / 分数小数混合算 / 运算顺序 / 凑整巧算
  */
 
-/* ---------------- 乘方速记：平方 11²~20² + 立方 2³~6³ + 符号陷阱 ---------------- */
+/* ---------------- 乘方速记：平方 / 立方 / 整十平方 / 高次幂 / (-1)ⁿ / 符号陷阱 ---------------- */
+
+/** 整数 → 上标文本（支持多位指数，如 14 → ¹⁴），与网页版 sup() 一致 */
+func sup(_ n: Int) -> String {
+    let digits: [Character] = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"]
+    return String(String(n).map { digits[Int(String($0))!] })
+}
+
+/** 整数幂（b^e，e ≥ 0），与 JS Math.pow 小整数结果一致 */
+func intPow(_ b: Int, _ e: Int) -> Int {
+    var v = 1
+    for _ in 0..<e { v *= b }
+    return v
+}
 
 func genPowerFlash(_ rng: Mulberry32) -> Question {
+    // 2026-10-02 扩池：34 → 约 120 个不同题面（与网页版同步）
     let kind = rng.next()
-    if kind < 0.4 {
+    if kind < 0.28 {
         let n = 11 + Int(rng.next() * 10)
         let v = n * n
         var traps: [Trap] = []
@@ -19,8 +33,8 @@ func genPowerFlash(_ rng: Mulberry32) -> Question {
         fillTextTraps(&traps, v * 10)
         return makeQuestion(rng: rng, prompt: text("\(n)²"), requirement: "秒答", correct: text(v), traps: traps)
     }
-    if kind < 0.65 {
-        let n = 2 + Int(rng.next() * 5)
+    if kind < 0.42 {
+        let n = 2 + Int(rng.next() * 8)
         let v = n * n * n
         var traps: [Trap] = []
         pushTextTrap(&traps, n * 30, "立方是 n×n×n，不是 n×3", v * 10)
@@ -28,9 +42,43 @@ func genPowerFlash(_ rng: Mulberry32) -> Question {
         fillTextTraps(&traps, v * 10)
         return makeQuestion(rng: rng, prompt: text("\(n)³"), requirement: "秒答", correct: text(v), traps: traps)
     }
+    if kind < 0.52 {
+        // 整十平方 30²~90²：n² = (n/10)² 添两个 0
+        let n = (3 + Int(rng.next() * 7)) * 10
+        let v = n * n
+        var traps: [Trap] = []
+        pushTextTrap(&traps, n * 20, "平方是 n×n，不是 n×2", v * 10)
+        pushTextTrap(&traps, v, "少了一个 0：先算 3²=9，再添两个 0", v * 10)
+        pushTextTrap(&traps, v * 100, "多了一个 0：先算 3²=9，再添两个 0", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text("\(n)²"), requirement: "秒答", correct: text(v), traps: traps)
+    }
+    if kind < 0.62 {
+        // 高次幂秒答：2⁴~2⁶、3⁴、10²~10⁴
+        let special: [(Int, Int)] = [(2, 4), (2, 5), (2, 6), (3, 4), (10, 2), (10, 3), (10, 4)]
+        let (b, e) = pick(rng, special)
+        let v = intPow(b, e)
+        var traps: [Trap] = []
+        pushTextTrap(&traps, b * e * 10, "乘方是几个底数相乘，不是底数 × 指数", v * 10)
+        pushTextTrap(&traps, (v / b) * 10, "少乘了一个底数", v * 10)
+        pushTextTrap(&traps, v * b * 10, "多乘了一个底数", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text("\(b)\(sup(e))"), requirement: "秒答", correct: text(v), traps: traps)
+    }
+    if kind < 0.72 {
+        // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1
+        let n = 10 + Int(rng.next() * 30)
+        let inParens = rng.next() < 0.5
+        let v = inParens ? (n % 2 == 0 ? 1 : -1) : -1
+        var traps: [Trap] = []
+        pushTextTrap(&traps, -v * 10, inParens ? "奇数个 -1 相乘得 -1，偶数个得 1" : "负号在括号外面，不管几次方结果都是 -1", v * 10)
+        pushTextTrap(&traps, n * 10, "答案只会是 1 或 -1，指数只决定正负", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text(inParens ? "(-1)\(sup(n))" : "-1\(sup(n))"), requirement: "秒答", correct: text(v), traps: traps)
+    }
     // 符号陷阱：负号在不在括号里，结果天差地别
-    let sq = rng.next() < 0.65
-    let a = sq ? 2 + Int(rng.next() * 8) : 2 + Int(rng.next() * 3)
+    let sq = rng.next() < 0.7
+    let a = sq ? 2 + Int(rng.next() * 11) : 2 + Int(rng.next() * 5)
     let inParens = rng.next() < 0.5
     if sq {
         let v = inParens ? a * a : -a * a

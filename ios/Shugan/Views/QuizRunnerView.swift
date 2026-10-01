@@ -503,10 +503,8 @@ struct QuizRunnerView: View {
                             .foregroundColor(.slate500)
                     }
                     if let q {
-                        FitView {
-                            MathExprView(expr: q.prompt, fontSize: 44)
-                        }
-                        .frame(height: 110)
+                        FitMathExpr(expr: q.prompt, fontSize: 44)
+                            .frame(height: 110)
                         if !reviewMode {
                             Text("= ?")
                                 .font(.system(size: 20))
@@ -582,13 +580,11 @@ struct QuizRunnerView: View {
                 let isWrongPicked = wrongIds.contains(c.id)
                 Button { onChoice(c) } label: {
                     VStack(spacing: 4) {
-                        FitView {
-                            MathExprView(
-                                expr: c.value,
-                                fontSize: 28,
-                                color: choiceTextColor(c, isWrongPicked: isWrongPicked)
-                            )
-                        }
+                        FitMathExpr(
+                            expr: c.value,
+                            fontSize: 28,
+                            color: choiceTextColor(c, isWrongPicked: isWrongPicked)
+                        )
                         .frame(height: 40)
                         if isWrongPicked, let trap = c.trap {
                             Text(trap)

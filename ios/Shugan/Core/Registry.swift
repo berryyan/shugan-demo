@@ -57,7 +57,19 @@ func findSkill(_ skillId: String) -> Skill? {
 func generateQuiz(_ skill: Skill, seed: Int = Int(Date().timeIntervalSince1970 * 1000), count: Int? = nil) -> [Question] {
     let rng = Mulberry32(seed: seed)
     let total = count ?? skill.questionCount
+    // 局内去重：同一局题面不重复（2026-10-02 女儿实测约分题一局出现 3 次 12/18）。
+    // 重复则消耗随机源重抽，最多重试 20 次（题池极小时保底放行）。
+    // 与网页版 bank.ts 的 generateQuiz 一一对应，两边必须同步修改。
+    var seen = Set<String>()
     return (0..<total).map { i in
-        skill.generators[i % skill.generators.count](rng)
+        let gen = skill.generators[i % skill.generators.count]
+        var q = gen(rng)
+        var retry = 0
+        while retry < 20 && seen.contains(exprKey(q.prompt)) {
+            q = gen(rng)
+            retry += 1
+        }
+        seen.insert(exprKey(q.prompt))
+        return q
     }
 }

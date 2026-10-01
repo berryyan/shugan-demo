@@ -159,10 +159,11 @@ let rewriteSkill = Skill(
 /* ---------------- 约分训练 ---------------- */
 
 func genSimplify(_ rng: Mulberry32) -> Question {
-    let MULTIPLIERS = [4, 6, 8, 9, 10, 15, 25]
+    // 2026-10-02 扩池：倍数 7 → 12 种、分母加 10，不同题面 144 → 226（与网页版同步）
+    let MULTIPLIERS = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 25]
     var n = 1, d = 2, k = 4
     for _ in 0..<50 {
-        let td = pick(rng, [3, 4, 5, 6, 7, 8, 9])
+        let td = pick(rng, [3, 4, 5, 6, 7, 8, 9, 10])
         let tn = randomNumerator(rng, td)
         let tk = pick(rng, MULTIPLIERS)
         if td * tk <= 100 {

@@ -20,10 +20,14 @@ struct MathExprView: View {
     private func content(_ e: MathExpr) -> AnyView {
         switch e {
         case .text(let t):
+            // 负数显示为标准减号 −（比半角连字符更长更醒目）并标红（2026-10-02 女儿反馈看不清正负号）
+            let neg = t.hasPrefix("-")
             return AnyView(
-                Text(t)
+                Text(t.replacingOccurrences(of: "-", with: "−"))
                     .font(.system(size: fontSize, weight: .black))
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .foregroundColor(neg ? .red600 : color)
             )
         case .frac(let n, let d):
             return AnyView(FracView(n: n, d: d, fontSize: fontSize))
@@ -52,7 +56,7 @@ struct MathExprView: View {
                     ForEach(Array(terms.enumerated()), id: \.offset) { i, t in
                         HStack(alignment: .center, spacing: fontSize * 0.3) {
                             if i > 0 {
-                                Text(op)
+                                Text(op == "-" ? "−" : op)
                                     .font(.system(size: fontSize, weight: .black))
                                     .foregroundColor(.indigo400)
                             }
@@ -106,33 +110,29 @@ struct FracView: View {
     }
 }
 
-/** 内容尺寸测量键（FitView 用） */
-private struct ContentSizeKey: PreferenceKey {
-    static let defaultValue: CGSize = .zero
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) { value = nextValue() }
-}
-
 /**
- * 自适应宽度容器 —— 网页版 FitText 的 SwiftUI 版：
- * 内容超出容器宽度时整体等比缩小，任意项数、任意形态的表达式永不超出屏幕宽度。
+ * 自适应宽度数学表达式 —— ViewThatFits 字号阶梯：
+ * 从基准字号逐级缩小（×0.85，共 7 档），第一档能完整放下就用哪档。
+ * 最长题面（4 项带小数乘除式）在最小档约 17pt 也远小于屏幕宽度，保证永不溢出。
+ * （2026-10-02 重写：旧 FitView 的 PreferenceKey 测量在长式子上失效，
+ *   导致乘除符号快闪题面被屏幕边缘裁切——女儿反馈"看不清正负号"的真因）
  */
-struct FitView<Content: View>: View {
-    @ViewBuilder var content: Content
-    @State private var contentSize: CGSize = .zero
+struct FitMathExpr: View {
+    let expr: MathExpr
+    var fontSize: CGFloat = 44
+    var color: Color = .slate800
+
+    private var sizes: [CGFloat] {
+        (0..<7).map { fontSize * pow(0.85, CGFloat($0)) }
+    }
 
     var body: some View {
-        GeometryReader { geo in
-            let scale = contentSize.width > 0 ? min(1, geo.size.width / contentSize.width) : 1
-            content
-                .fixedSize()
-                .background(
-                    GeometryReader { g in
-                        Color.clear.preference(key: ContentSizeKey.self, value: g.size)
-                    }
-                )
-                .scaleEffect(scale, anchor: .center)
-                .frame(width: geo.size.width, height: geo.size.height)
+        ViewThatFits(in: .horizontal) {
+            ForEach(sizes, id: \.self) { s in
+                MathExprView(expr: expr, fontSize: s, color: color)
+                    .fixedSize()
+            }
         }
-        .onPreferenceChange(ContentSizeKey.self) { contentSize = $0 }
+        .frame(maxWidth: .infinity)
     }
 }

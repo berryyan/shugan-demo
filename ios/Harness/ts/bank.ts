@@ -293,10 +293,11 @@ const genMixedToImproper: QuestionGenerator = (rng) => {
 const genSimplify: QuestionGenerator = (rng) => {
   rngGlobal = rng;
   // 先定最简分数，再乘倍数 k 得到题面；k 必须有真因子，才能造"没约干净"的干扰项
-  const MULTIPLIERS = [4, 6, 8, 9, 10, 15, 25];
+  // 2026-10-02 扩池：倍数 7 → 12 种、分母加 10，不同题面 144 → 226
+  const MULTIPLIERS = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 25];
   let n = 1, d = 2, k = 4;
   for (let tries = 0; tries < 50; tries++) {
-    const td = pick(rng, [3, 4, 5, 6, 7, 8, 9]);
+    const td = pick(rng, [3, 4, 5, 6, 7, 8, 9, 10]);
     const tn = randomNumerator(rng, td);
     const tk = pick(rng, MULTIPLIERS);
     if (td * tk <= 100) {
@@ -1468,9 +1469,9 @@ const signFlashMulSkill: Skill = {
     '考核点：不计算，判断乘除结果的正负（教材 1.3 符号规则）',
     '口诀：数负数的个数——偶数个得正，奇数个得负',
     '2~4 个数连乘或连除，"等于 0"永远是干扰项（没有 0 因数）',
-    '限时很短，凭直觉秒杀！本题型只有闯关和进阶两种模式',
+    '本题型只有闯关和进阶两种模式',
   ],
-  timeLimitSec: 5,
+  timeLimitSec: 8, // 2026-10-02 从 5 秒调到 8 秒：4 项式子 5 秒读不完（女儿实测反馈）
   questionCount: 10,
   supportsReview: false,
   generators: [genSignFlashMul],
@@ -1495,10 +1496,15 @@ const signedMulSkill: Skill = {
 /* ---------------- 有理数 1.4/1.5 + 巧算：乘方速记 / 分数小数混合 / 运算顺序 / 凑整巧算 ---------------- */
 
 /** 乘方速记：平方 11²~20²（40%）+ 立方 2³~6³（25%）+ (-a)² vs -a² 符号陷阱（35%） */
+/** 整数 → 上标文本（支持多位指数，如 14 → ¹⁴） */
+const sup = (n: number): string => String(n).replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]);
+
 const genPowerFlash: QuestionGenerator = (rng) => {
   rngGlobal = rng;
+  // 2026-10-02 扩池：34 → 约 120 个不同题面（平方 11~20 / 立方 2~9 / 整十平方 /
+  // 高次幂秒答 / (-1)ⁿ 奇偶 / 符号陷阱底数加宽）
   const kind = rng();
-  if (kind < 0.4) {
+  if (kind < 0.28) {
     const n = 11 + Math.floor(rng() * 10);
     const v = n * n;
     const traps: Trap[] = [];
@@ -1508,8 +1514,8 @@ const genPowerFlash: QuestionGenerator = (rng) => {
     fillTextTraps(traps, v * 10);
     return makeQuestion(text(`${n}²`), '秒答', text(String(v)), traps);
   }
-  if (kind < 0.65) {
-    const n = 2 + Math.floor(rng() * 5);
+  if (kind < 0.42) {
+    const n = 2 + Math.floor(rng() * 8);
     const v = n * n * n;
     const traps: Trap[] = [];
     pushTextTrap(traps, n * 30, '立方是 n×n×n，不是 n×3', v * 10);
@@ -1517,9 +1523,43 @@ const genPowerFlash: QuestionGenerator = (rng) => {
     fillTextTraps(traps, v * 10);
     return makeQuestion(text(`${n}³`), '秒答', text(String(v)), traps);
   }
+  if (kind < 0.52) {
+    // 整十平方 30²~90²：n² = (n/10)² 添两个 0
+    const n = (3 + Math.floor(rng() * 7)) * 10;
+    const v = n * n;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, n * 20, '平方是 n×n，不是 n×2', v * 10);
+    pushTextTrap(traps, v, '少了一个 0：先算 3²=9，再添两个 0', v * 10);
+    pushTextTrap(traps, v * 100, '多了一个 0：先算 3²=9，再添两个 0', v * 10);
+    fillTextTraps(traps, v * 10);
+    return makeQuestion(text(`${n}²`), '秒答', text(String(v)), traps);
+  }
+  if (kind < 0.62) {
+    // 高次幂秒答：2⁴~2⁶、3⁴、10²~10⁴
+    const SPECIAL: [number, number][] = [[2, 4], [2, 5], [2, 6], [3, 4], [10, 2], [10, 3], [10, 4]];
+    const [b, e] = pick(rng, SPECIAL);
+    const v = Math.pow(b, e);
+    const traps: Trap[] = [];
+    pushTextTrap(traps, b * e * 10, '乘方是几个底数相乘，不是底数 × 指数', v * 10);
+    pushTextTrap(traps, (v / b) * 10, '少乘了一个底数', v * 10);
+    pushTextTrap(traps, v * b * 10, '多乘了一个底数', v * 10);
+    fillTextTraps(traps, v * 10);
+    return makeQuestion(text(`${b}${sup(e)}`), '秒答', text(String(v)), traps);
+  }
+  if (kind < 0.72) {
+    // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1
+    const n = 10 + Math.floor(rng() * 30);
+    const inParens = rng() < 0.5;
+    const v = inParens ? (n % 2 === 0 ? 1 : -1) : -1;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, -v * 10, inParens ? '奇数个 -1 相乘得 -1，偶数个得 1' : '负号在括号外面，不管几次方结果都是 -1', v * 10);
+    pushTextTrap(traps, n * 10, '答案只会是 1 或 -1，指数只决定正负', v * 10);
+    fillTextTraps(traps, v * 10);
+    return makeQuestion(text(inParens ? `(-1)${sup(n)}` : `-1${sup(n)}`), '秒答', text(String(v)), traps);
+  }
   // 符号陷阱：负号在不在括号里，结果天差地别
-  const sq = rng() < 0.65;
-  const a = sq ? 2 + Math.floor(rng() * 8) : 2 + Math.floor(rng() * 3);
+  const sq = rng() < 0.7;
+  const a = sq ? 2 + Math.floor(rng() * 11) : 2 + Math.floor(rng() * 5);
   const inParens = rng() < 0.5;
   if (sq) {
     const v = inParens ? a * a : -a * a;
@@ -1928,7 +1968,15 @@ export function findSkill(skillId: string): Skill | undefined {
 export function generateQuiz(skill: Skill, seed = Date.now(), count?: number): Question[] {
   const rng = mulberry32(seed);
   const total = count ?? skill.questionCount;
-  return Array.from({ length: total }, (_, i) =>
-    skill.generators[i % skill.generators.length](rng),
-  );
+  // 局内去重：同一局题面不重复（2026-10-02 女儿实测约分题一局出现 3 次 12/18）。
+  // 重复则消耗随机源重抽，最多重试 20 次（题池极小时保底放行）。
+  // 与 iOS 版 Registry.swift 的 generateQuiz 一一对应，两边必须同步修改。
+  const seen = new Set<string>();
+  return Array.from({ length: total }, (_, i) => {
+    const gen = skill.generators[i % skill.generators.length];
+    let q = gen(rng);
+    for (let retry = 0; retry < 20 && seen.has(exprKey(q.prompt)); retry++) q = gen(rng);
+    seen.add(exprKey(q.prompt));
+    return q;
+  });
 }

@@ -12,7 +12,13 @@ export default function MathView({
   className?: string;
 }) {
   if (expr.kind === 'text') {
-    return <span className={className}>{expr.text}</span>;
+    // 负数显示为标准减号 −（比半角连字符更长更醒目）并标红（2026-10-02 女儿反馈看不清正负号）
+    const neg = expr.text.startsWith('-');
+    return (
+      <span className={`${neg ? 'text-red-600 ' : ''}${className}`}>
+        {expr.text.replace(/-/g, '−')}
+      </span>
+    );
   }
   if (expr.kind === 'frac') {
     return <Frac n={expr.n} d={expr.d} className={className} />;
@@ -34,7 +40,7 @@ export default function MathView({
           const neg = t.kind === 'text' && t.text.startsWith('-');
           return (
             <span key={i} className="inline-flex items-center gap-[0.3em]">
-              {i > 0 && <span className="text-indigo-400 font-black">{expr.op}</span>}
+              {i > 0 && <span className="text-indigo-400 font-black">{expr.op === '-' ? '−' : expr.op}</span>}
               {neg ? (
                 <span className="inline-flex items-center">
                   <span className="text-slate-400">(</span>

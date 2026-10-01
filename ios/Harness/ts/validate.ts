@@ -172,17 +172,18 @@ export function validateSkill(skillId: string, seeds = 500) {
         }
         if (q.choices.length !== 4) bad.push(`选项不足4个 ${exprKey(q.prompt)}`);
       }
-      // 乘方速记：解析题面文本（n² / n³ / (-a)² / -a² / (-a)³）核对答案
+      // 乘方速记：解析题面文本核对答案（n²~n⁶ / 多位上标如 10⁴ / (-a)² / -a² / (-1)¹⁴）
       if (skillId === 'g6-power-flash' && q.prompt.kind === 'text') {
         const p = q.prompt.text;
+        const unSup = (s: string) => Number(s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c))));
         let want: number | null = null;
-        let m = p.match(/^\((-?\d+)\)([²³])$/);
+        let m = p.match(/^\((-?\d+)\)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/);
         if (m) {
           const base = Number(m[1]);
-          want = m[2] === '²' ? base * base : base * base * base;
-        } else if ((m = p.match(/^(-?\d+)([²³])$/))) {
+          want = Math.pow(base, unSup(m[2])); // 括号内整体取幂，符号随底数
+        } else if ((m = p.match(/^(-?\d+)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/))) {
           const base = Number(m[1]);
-          const pow = m[2] === '²' ? base * base : base * base * base;
+          const pow = Math.pow(Math.abs(base), unSup(m[2]));
           // -a² = -(a²)：负号在幂外面；a² 普通幂
           want = p.startsWith('-') ? -pow : pow;
         }

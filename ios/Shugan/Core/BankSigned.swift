@@ -543,9 +543,9 @@ let signFlashMulSkill = Skill(
         "考核点：不计算，判断乘除结果的正负（教材 1.3 符号规则）",
         "口诀：数负数的个数——偶数个得正，奇数个得负",
         "2~4 个数连乘或连除，“等于 0”永远是干扰项（没有 0 因数）",
-        "限时很短，凭直觉秒杀！本题型只有闯关和进阶两种模式",
+        "本题型只有闯关和进阶两种模式",
     ],
-    timeLimitSec: 5,
+    timeLimitSec: 8, // 2026-10-02 从 5 秒调到 8 秒：4 项式子 5 秒读不完（女儿实测反馈）
     questionCount: 10,
     supportsReview: false,
     generators: [genSignFlashMul]

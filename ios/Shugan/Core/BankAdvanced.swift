@@ -5,7 +5,7 @@ import Foundation
  * 乘方速记 / 分数小数混合算 / 运算顺序 / 凑整巧算
  */
 
-/* ---------------- 乘方速记（一阶段）：平方 / 立方（各穿插 30% 符号陷阱）/ (-1)ⁿ / 高次幂 ---------------- */
+/* ---------------- 乘方速记（二阶段，当前版本）：平方 / 立方 / 整十平方 / 高次幂 / (-1)ⁿ / 符号陷阱综合 ---------------- */
 
 /** 整数 → 上标文本（支持多位指数，如 14 → ¹⁴），与网页版 sup() 一致 */
 func sup(_ n: Int) -> String {
@@ -21,12 +21,23 @@ func intPow(_ b: Int, _ e: Int) -> Int {
 }
 
 func genPowerFlash(_ rng: Mulberry32) -> Question {
-    // 2026-10-02 一阶段（负数乘方专攻，用户拍板）：平方底数 1~10、立方底数 2~4，
-    // 正数为主、各 30% 穿插符号陷阱；(-1)ⁿ/-1ⁿ 加量到 25%；高次幂只剩 2⁴~2⁶、10²~10⁴。
-    // 11²~20²、整十平方、5³~6³ 拆到二阶段，规划见 docs/乘方速记两阶段规划.md。与网页版同步
+    // 2026-10-06 二阶段（用户拍板启用）：一阶段负数乘方基础上加回背诵类——
+    // 平方 35%（一半 11²~20² 必背，一半 1~10 且 30% 穿插符号陷阱）、立方 2~6 占 20%（30% 陷阱）、
+    // 整十平方 30²~90² 占 10%、高次幂 2⁴~2⁶/10²~10⁴ 占 10%、(-1)ⁿ/-1ⁿ 降回 10%、符号陷阱综合抽查 15%。
+    // 规划见 docs/乘方速记两阶段规划.md。与网页版同步
     let kind = rng.next()
     if kind < 0.35 {
-        // 平方考核：底数 1~10，70% 正数平方，30% 符号陷阱
+        // 平方考核：一半 11²~20² 必背；一半 1~10（30% 穿插符号陷阱）
+        if rng.next() < 0.5 {
+            let n = 11 + Int(rng.next() * 10)
+            let v = n * n
+            var traps: [Trap] = []
+            pushTextTrap(&traps, n * 20, "平方是 n×n，不是 n×2", v * 10)
+            pushTextTrap(&traps, (n - 1) * (n - 1) * 10, "记岔了：这是相邻的平方数", v * 10)
+            pushTextTrap(&traps, (n + 1) * (n + 1) * 10, "记岔了：这是相邻的平方数", v * 10)
+            fillTextTraps(&traps, v * 10)
+            return makeQuestion(rng: rng, prompt: text("\(n)²"), requirement: "秒答", correct: text(v), traps: traps)
+        }
         let a = 1 + Int(rng.next() * 10)
         if rng.next() < 0.3 {
             let inParens = rng.next() < 0.5
@@ -45,9 +56,9 @@ func genPowerFlash(_ rng: Mulberry32) -> Question {
         fillTextTraps(&traps, v * 10)
         return makeQuestion(rng: rng, prompt: text("\(a)²"), requirement: "秒答", correct: text(v), traps: traps)
     }
-    if kind < 0.6 {
-        // 立方考核：底数 2~4，70% 正数立方，30% 符号陷阱 (-a)³
-        let a = 2 + Int(rng.next() * 3)
+    if kind < 0.55 {
+        // 立方考核：底数 2~6，70% 正数立方，30% 符号陷阱 (-a)³
+        let a = 2 + Int(rng.next() * 5)
         if rng.next() < 0.3 {
             let v = -a * a * a
             var traps: [Trap] = []
@@ -63,8 +74,31 @@ func genPowerFlash(_ rng: Mulberry32) -> Question {
         fillTextTraps(&traps, v * 10)
         return makeQuestion(rng: rng, prompt: text("\(a)³"), requirement: "秒答", correct: text(v), traps: traps)
     }
+    if kind < 0.65 {
+        // 整十平方 30²~90²：n² = (n/10)² 添两个 0
+        let n = (3 + Int(rng.next() * 7)) * 10
+        let v = n * n
+        var traps: [Trap] = []
+        pushTextTrap(&traps, n * 20, "平方是 n×n，不是 n×2", v * 10)
+        pushTextTrap(&traps, v, "少了一个 0：先算 3²=9，再添两个 0", v * 10)
+        pushTextTrap(&traps, v * 100, "多了一个 0：先算 3²=9，再添两个 0", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text("\(n)²"), requirement: "秒答", correct: text(v), traps: traps)
+    }
+    if kind < 0.75 {
+        // 高次幂秒答：2⁴~2⁶、10²~10⁴
+        let special: [(Int, Int)] = [(2, 4), (2, 5), (2, 6), (10, 2), (10, 3), (10, 4)]
+        let (b, e) = pick(rng, special)
+        let v = intPow(b, e)
+        var traps: [Trap] = []
+        pushTextTrap(&traps, b * e * 10, "乘方是几个底数相乘，不是底数 × 指数", v * 10)
+        pushTextTrap(&traps, (v / b) * 10, "少乘了一个底数", v * 10)
+        pushTextTrap(&traps, v * b * 10, "多乘了一个底数", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text("\(b)\(sup(e))"), requirement: "秒答", correct: text(v), traps: traps)
+    }
     if kind < 0.85 {
-        // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1（一阶段加量到 25%）
+        // (-1)ⁿ 与 -1ⁿ：奇偶定号；括号外的负号结果永远是 -1（二阶段降回 10%）
         let n = 10 + Int(rng.next() * 30)
         let inParens = rng.next() < 0.5
         let v = inParens ? (n % 2 == 0 ? 1 : -1) : -1
@@ -74,16 +108,24 @@ func genPowerFlash(_ rng: Mulberry32) -> Question {
         fillTextTraps(&traps, v * 10)
         return makeQuestion(rng: rng, prompt: text(inParens ? "(-1)\(sup(n))" : "-1\(sup(n))"), requirement: "秒答", correct: text(v), traps: traps)
     }
-    // 高次幂秒答：2⁴~2⁶、10²~10⁴（15%）
-    let special: [(Int, Int)] = [(2, 4), (2, 5), (2, 6), (10, 2), (10, 3), (10, 4)]
-    let (b, e) = pick(rng, special)
-    let v = intPow(b, e)
+    // 符号陷阱综合抽查（15%）：平方立方混合，检验负号位置是否真掌握
+    let sq = rng.next() < 0.6
+    let a = sq ? 1 + Int(rng.next() * 10) : 2 + Int(rng.next() * 3)
+    let inParens = rng.next() < 0.5
+    if sq {
+        let v = inParens ? a * a : -a * a
+        var traps: [Trap] = []
+        pushTextTrap(&traps, -v * 10, inParens ? "负数的平方是正数" : "负号在平方外面：先算平方再添负号", v * 10)
+        pushTextTrap(&traps, (inParens ? a * 2 : -a * 2) * 10, "平方是 a×a，不是 a×2", v * 10)
+        fillTextTraps(&traps, v * 10)
+        return makeQuestion(rng: rng, prompt: text(inParens ? "(-\(a))²" : "-\(a)²"), requirement: "计算（看清负号位置）", correct: text(v), traps: traps)
+    }
+    let v = -a * a * a
     var traps: [Trap] = []
-    pushTextTrap(&traps, b * e * 10, "乘方是几个底数相乘，不是底数 × 指数", v * 10)
-    pushTextTrap(&traps, (v / b) * 10, "少乘了一个底数", v * 10)
-    pushTextTrap(&traps, v * b * 10, "多乘了一个底数", v * 10)
+    pushTextTrap(&traps, -v * 10, "负数的立方还是负数（三个负号）", v * 10)
+    pushTextTrap(&traps, a * 30, "立方是 a×a×a，不是 a×3", v * 10)
     fillTextTraps(&traps, v * 10)
-    return makeQuestion(rng: rng, prompt: text("\(b)\(sup(e))"), requirement: "秒答", correct: text(v), traps: traps)
+    return makeQuestion(rng: rng, prompt: text("(-\(a))³"), requirement: "计算（看清符号）", correct: text(v), traps: traps)
 }
 
 /* ---------------- 分数+小数混合四则（有理数精确计算，答案择优呈现） ---------------- */
@@ -343,8 +385,8 @@ let powerFlashSkill = Skill(
     title: "乘方速记",
     intro: [
         "考核点：平方/立方秒答 + 负号位置辨析（教材 1.4）",
-        "一阶段：平方 1²~10²、立方 2³~4³、(-1)ⁿ 看指数奇偶、2⁴~2⁶ 与 10 的幂",
-        "符号陷阱穿插其中：(-3)² = 9 但 -3² = -9，负号在括号外先算平方！",
+        "二阶段：平方 1²~20²、立方 2³~6³、整十平方（40²=1600）、2⁴~2⁶ 与 10 的幂",
+        "(-1)ⁿ 看指数奇偶；符号陷阱综合抽查：(-3)² = 9 但 -3² = -9，看清负号位置！",
         "复习模式键盘有负号键",
     ],
     timeLimitSec: 6,

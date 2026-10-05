@@ -13,7 +13,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.berryyan.shugan
         MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "6"
+        CURRENT_PROJECT_VERSION: "7"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: 数学不再难
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

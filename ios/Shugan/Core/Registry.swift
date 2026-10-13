@@ -10,6 +10,7 @@ let GRADES: [Grade] = [
         id: "g5",
         title: "五年级 · 分数与小数",
         units: [
+            Unit(id: "g5-num-sense", title: "5.0 数感地基 · 因数与倍数", skills: [factorSenseSkill, divisSenseSkill, primeSenseSkill, gcdSenseSkill, lcmSenseSkill]),
             Unit(id: "g5-frac-meaning", title: "5.1 分数的意义与改写", skills: [rewriteSkill]),
             Unit(id: "g5-frac-simplify", title: "5.2 约分", skills: [simplifySkill]),
             Unit(id: "g5-frac-lcd", title: "5.3 通分", skills: [lcdSkill]),

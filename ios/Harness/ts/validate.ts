@@ -261,5 +261,10 @@ export function validateAll() {
     fracDecMix: validateSkill('g6-frac-dec-mix'),
     opOrder: validateSkill('g6-op-order'),
     opLaws: validateSkill('g6-op-laws'),
+    factorSense: validateSkill('g5-ns-factor'),
+    divisSense: validateSkill('g5-ns-divis'),
+    primeSense: validateSkill('g5-ns-prime'),
+    gcdSense: validateSkill('g5-ns-gcd'),
+    lcmSense: validateSkill('g5-ns-lcm'),
   };
 }

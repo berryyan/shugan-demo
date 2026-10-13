@@ -1947,6 +1947,561 @@ const opLawsSkill: Skill = {
   generators: [genOpLaws],
 };
 
+/* ---------------- 五年级 5.0 数感地基 · 因数与倍数 ----------------
+ * 2026-10-13 新增（用户拍板）：约分/通分只是"用到"公因数公倍数，不等于"学会"，
+ * 按五年级教材难度把地基拆成独立训练链：因数枚举 → 整除特征 → 质数合数 → 最大公因数 → 最小公倍数。
+ * 难度封顶：N ≤ 100、分解质因数质因子（按重数计）≤ 4 个、不碰竞赛内容。
+ */
+
+/** N 的因数列表（升序） */
+const factorsOf = (n: number): number[] => {
+  const out: number[] = [];
+  for (let i = 1; i <= n; i++) if (n % i === 0) out.push(i);
+  return out;
+};
+
+/** 末两位补零文本：5 → "05" */
+const pad2 = (x: number): string => String(x).padStart(2, '0');
+
+/** 质数判断 */
+const isPrimeNum = (n: number): boolean => {
+  if (n < 2) return false;
+  for (let p = 2; p * p <= n; p++) if (n % p === 0) return false;
+  return true;
+};
+
+/** 最小质因数 */
+const smallestPrimeFactor = (n: number): number => {
+  let p = 2;
+  while (n % p !== 0) p++;
+  return p;
+};
+
+/** 分解质因数 → [质因子, 指数][]（升序） */
+const factorize = (n: number): [number, number][] => {
+  const out: [number, number][] = [];
+  let x = n;
+  for (let p = 2; p * p <= x; p++) {
+    if (x % p === 0) {
+      let e = 0;
+      while (x % p === 0) {
+        x = x / p;
+        e++;
+      }
+      out.push([p, e]);
+    }
+  }
+  if (x > 1) out.push([x, 1]);
+  return out;
+};
+
+/** 质因子列表（含重数，升序）：12 → [2, 2, 3] */
+const factorList = (n: number): number[] => {
+  const out: number[] = [];
+  for (const [p, e] of factorize(n)) for (let i = 0; i < e; i++) out.push(p);
+  return out;
+};
+
+/** 因子列表 → 标准分解文本：[2, 2, 3] → 2²×3 */
+const factorListText = (list: number[]): string => {
+  const parts: string[] = [];
+  let i = 0;
+  while (i < list.length) {
+    let j = i;
+    while (j < list.length && list[j] === list[i]) j++;
+    parts.push(j - i === 1 ? String(list[i]) : `${list[i]}${sup(j - i)}`);
+    i = j;
+  }
+  return parts.join('×');
+};
+
+/** 分解质因数标准文本：12 → 2²×3 */
+const factorText = (n: number): string => factorListText(factorList(n));
+
+/** 因数枚举宿主数：≤100、因数总数 ≥5（即非平凡因数 ≥3 个）的合数 */
+const FACTOR_HOSTS: number[] = [];
+for (let n = 4; n <= 100; n++) if (factorsOf(n).length >= 5) FACTOR_HOSTS.push(n);
+
+/** 互质乘数对（都 ≥2 且互质）：构造"有公因数 g 但非倍数关系"的数对 */
+const COP_MULT: [number, number][] = [
+  [2, 3],
+  [2, 5],
+  [3, 4],
+  [3, 5],
+  [4, 5],
+];
+
+/** 互质数对（两数 ≤ 50，混合 质+合 / 合+合 / 相邻数） */
+const COP_PAIRS: [number, number][] = [
+  [4, 9], [8, 9], [4, 15], [9, 10], [6, 35], [8, 15], [9, 20], [14, 15], [21, 22], [25, 26],
+  [12, 35], [7, 12], [8, 21], [9, 25], [10, 21], [4, 25], [6, 25], [27, 28], [33, 35], [20, 21],
+  [7, 9], [8, 27], [13, 14], [16, 25], [24, 25],
+];
+
+/** 互质数对（乘积 ≤ 100，供最小公倍数"互质直接乘"题型） */
+const COP_PAIRS_SMALL: [number, number][] = [
+  [2, 3], [2, 5], [2, 7], [2, 9], [3, 4], [3, 5], [3, 7], [3, 8], [3, 10], [4, 5],
+  [4, 7], [4, 9], [5, 6], [5, 7], [5, 8], [5, 9], [6, 7], [7, 8], [7, 9], [8, 9],
+  [2, 11], [3, 11], [4, 11], [7, 10], [9, 10], [5, 11], [8, 11], [9, 11],
+];
+
+/** 有公因数但非倍数关系的数对（最小公倍数 ≤ 100） */
+const LCM_PAIRS: [number, number][] = [
+  [4, 6], [6, 8], [6, 9], [6, 10], [8, 10], [8, 12], [9, 12], [10, 12], [10, 15], [12, 14],
+  [12, 15], [12, 16], [12, 18], [14, 21], [15, 20], [10, 14], [8, 14], [9, 15], [16, 20], [15, 25],
+  [20, 25], [12, 20], [16, 24], [18, 27], [20, 30], [6, 15], [4, 10], [4, 14], [6, 14],
+];
+
+/** 因数枚举（数感地基 1/5）：选因数 40% / 选非因数 25% / 因数个数 20% / 因数配对 15% */
+const genFactorSense: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  const N = pick(rng, FACTOR_HOSTS);
+  const factors = factorsOf(N);
+  const nontrivial = factors.filter((f) => f > 1 && f < N);
+  if (kind < 0.4) {
+    // 选出 N 的因数：干扰项 = 邻近但不能整除的数
+    const c = pick(rng, nontrivial);
+    const traps: Trap[] = [];
+    for (let dt = 1; traps.length < 3 && dt <= 10; dt++) {
+      for (const t of [c - dt, c + dt]) {
+        if (traps.length >= 3) break;
+        if (t <= 1 || t >= N || N % t === 0) continue;
+        traps.push({ value: text(String(t)), trap: `${N} ÷ ${t} 有余数，${t} 不是 ${N} 的因数` });
+      }
+    }
+    return makeQuestion(text(`${N} 的因数`), '下面哪个是？', text(String(c)), traps);
+  }
+  if (kind < 0.65) {
+    // 选出不是 N 的因数：干扰项 = 3 个真因数
+    const non: number[] = [];
+    for (let t = 2; t < N; t++) if (N % t !== 0) non.push(t);
+    const c = pick(rng, non);
+    const traps: Trap[] = [];
+    const used = new Set<number>();
+    while (traps.length < 3) {
+      const f = pick(rng, nontrivial);
+      if (used.has(f)) continue;
+      used.add(f);
+      traps.push({ value: text(String(f)), trap: `${f} 是 ${N} 的因数（${N} ÷ ${f} = ${N / f}）` });
+    }
+    return makeQuestion(text(`${N} 的因数`), '下面哪个不是？', text(String(c)), traps);
+  }
+  if (kind < 0.85) {
+    // 因数个数：只出因数总数 5~9 的数（太多没有秒答价值）
+    let N2 = N;
+    for (let tries = 0; tries < 50 && factorsOf(N2).length > 9; tries++) N2 = pick(rng, FACTOR_HOSTS);
+    const tau = factorsOf(N2).length;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, (tau - 2) * 10, '漏数了 1 和它自己', tau * 10);
+    pushTextTrap(traps, (tau - 1) * 10, '漏了一对——因数都是成对出现的', tau * 10);
+    pushTextTrap(traps, (tau + 1) * 10, '多数了一个，再核对一遍', tau * 10);
+    return makeQuestion(text(String(N2)), '它的因数有几个？', text(String(tau)), traps);
+  }
+  // 因数配对：N = a ×（ ）
+  const a = pick(rng, nontrivial);
+  const b = N / a;
+  const traps: Trap[] = [];
+  for (const t of [b + 1, b - 1, b + 2, b - 2, b + 3]) {
+    if (traps.length >= 3) break;
+    if (t <= 0 || t === b) continue;
+    traps.push({ value: text(String(t)), trap: `${a} × ${t} = ${a * t}，不是 ${N}` });
+  }
+  return makeQuestion(text(`${N} = ${a} ×（ ）`), '括号里填几？', text(String(b)), traps);
+};
+
+/** 整除特征（数感地基 2/5）：3/9 数字和 55%、2/5 个位 20%、6/10 双条件 15%、4/25 末两位 10% */
+const genDivisSense: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.55) {
+    // 数字和规则：3（30%）或 9（25%）
+    const m = kind < 0.3 ? 3 : 9;
+    const len = rng() < 0.5 ? 3 : 4;
+    let prefix = 1 + Math.floor(rng() * 9);
+    for (let i = 0; i < len - 2; i++) prefix = prefix * 10 + Math.floor(rng() * 10);
+    let S = 0;
+    for (const ch of String(prefix)) S += Number(ch);
+    const rc = (m - (S % m)) % m; // 末位需要满足的 mod m 余数
+    const okDigits: number[] = [];
+    const badDigits: number[] = [];
+    for (let d = 0; d <= 9; d++) (d % m === rc ? okDigits : badDigits).push(d);
+    const last = pick(rng, okDigits);
+    const N = prefix * 10 + last;
+    const traps: Trap[] = [];
+    const used = new Set<number>();
+    while (traps.length < 3) {
+      const w = pick(rng, badDigits);
+      if (used.has(w)) continue;
+      used.add(w);
+      traps.push({ value: text(String(prefix * 10 + w)), trap: `数字和是 ${S + w}，不能被 ${m} 整除` });
+    }
+    return makeQuestion(text(`下面哪个数能被 ${m} 整除？`), '整除判断（算数字和）', text(String(N)), traps);
+  }
+  if (kind < 0.75) {
+    // 个位规则：2 或 5
+    const m = rng() < 0.5 ? 2 : 5;
+    const valid = m === 2 ? [0, 2, 4, 6, 8] : [0, 5];
+    const validText = m === 2 ? '0、2、4、6、8' : '0 或 5';
+    const prefix = 10 + Math.floor(rng() * 989); // 10~998
+    const last = pick(rng, valid);
+    const N = prefix * 10 + last;
+    const traps: Trap[] = [];
+    const used = new Set<number>(valid);
+    while (traps.length < 3) {
+      const w = Math.floor(rng() * 10);
+      if (used.has(w)) continue;
+      used.add(w);
+      traps.push({ value: text(String(prefix * 10 + w)), trap: `被 ${m} 整除的数，个位只能是 ${validText}` });
+    }
+    return makeQuestion(text(`下面哪个数能被 ${m} 整除？`), '整除判断（看个位）', text(String(N)), traps);
+  }
+  if (kind < 0.9) {
+    // 双条件：6（偶数 + 数字和能被 3 整除）或 10（个位 0）
+    if (rng() < 0.5) {
+      const prefix = 10 + Math.floor(rng() * 989);
+      const N = prefix * 10;
+      const traps: Trap[] = [
+        { value: text(String(prefix * 10 + 5)), trap: '个位是 5 只能被 5 整除，10 的倍数个位必须是 0' },
+      ];
+      const used = new Set<number>([0, 5]);
+      while (traps.length < 3) {
+        const w = 1 + Math.floor(rng() * 9);
+        if (used.has(w)) continue;
+        used.add(w);
+        traps.push({ value: text(String(prefix * 10 + w)), trap: '10 的倍数个位必须是 0' });
+      }
+      return makeQuestion(text('下面哪个数能被 10 整除？'), '整除判断', text(String(N)), traps);
+    }
+    // 6
+    let prefix = 1 + Math.floor(rng() * 9);
+    prefix = prefix * 10 + Math.floor(rng() * 10); // 前两位
+    let S = 0;
+    for (const ch of String(prefix)) S += Number(ch);
+    const rc = (3 - (S % 3)) % 3;
+    const okEven: number[] = []; // 偶数且余数对 → 正确答案
+    const oddOk: number[] = []; // 奇数但数字和对 → 陷阱 a
+    const evenBad: number[] = []; // 偶数但数字和不对 → 陷阱 b
+    const oddBad: number[] = []; // 奇数且不对 → 陷阱 c
+    for (let d = 0; d <= 9; d++) {
+      const even = d % 2 === 0;
+      const ok = d % 3 === rc;
+      if (even && ok) okEven.push(d);
+      else if (!even && ok) oddOk.push(d);
+      else if (even) evenBad.push(d);
+      else oddBad.push(d);
+    }
+    const last = pick(rng, okEven);
+    const N = prefix * 10 + last;
+    const w1 = pick(rng, oddOk);
+    const w2 = pick(rng, evenBad);
+    const w3 = pick(rng, oddBad);
+    const traps: Trap[] = [
+      { value: text(String(prefix * 10 + w1)), trap: '数字和能被 3 整除，但它是奇数——6 的倍数必须是偶数' },
+      { value: text(String(prefix * 10 + w2)), trap: '是偶数，但数字和不能被 3 整除' },
+      { value: text(String(prefix * 10 + w3)), trap: '既不是偶数，数字和也不能被 3 整除' },
+    ];
+    return makeQuestion(text('下面哪个数能被 6 整除？'), '整除判断（两个条件都要满足）', text(String(N)), traps);
+  }
+  // 末两位规则：4 或 25
+  if (rng() < 0.5) {
+    const prefix = 1 + Math.floor(rng() * 98);
+    const e = Math.floor(rng() * 25) * 4;
+    const N = prefix * 100 + e;
+    const traps: Trap[] = [];
+    for (const dt of [2, 6, 10]) {
+      const w = (e + dt) % 100;
+      traps.push({ value: text(String(prefix * 100 + w)), trap: `末两位 ${pad2(w)} 除以 4 有余数，被 4 整除要看末两位` });
+    }
+    return makeQuestion(text('下面哪个数能被 4 整除？'), '整除判断（看末两位）', text(String(N)), traps);
+  }
+  const prefix = 1 + Math.floor(rng() * 98);
+  const e = pick(rng, [0, 25, 50, 75]);
+  const N = prefix * 100 + e;
+  const pool = [5, 15, 20, 35, 45, 65, 85, 95];
+  const traps: Trap[] = [];
+  const used = new Set<number>();
+  while (traps.length < 3) {
+    const w = pick(rng, pool);
+    if (used.has(w)) continue;
+    used.add(w);
+    traps.push({ value: text(String(prefix * 100 + w)), trap: `末两位 ${pad2(w)} 不行——被 25 整除末两位只能是 00、25、50、75` });
+  }
+  return makeQuestion(text('下面哪个数能被 25 整除？'), '整除判断（看末两位）', text(String(N)), traps);
+};
+
+/** 100 以内质数 */
+const PRIMES_100: number[] = [];
+for (let n = 2; n <= 100; n++) if (isPrimeNum(n)) PRIMES_100.push(n);
+
+/** 看着像质数的合数（经典伪装者：51=3×17、57=3×19、91=7×13 等） */
+const PSEUDO_PRIMES = [9, 15, 21, 25, 27, 33, 35, 39, 45, 49, 51, 55, 57, 63, 65, 69, 77, 81, 85, 87, 91, 93, 95, 99];
+
+/** 分解质因数宿主：4~100 的合数，质因子（按重数计）≤ 4 个 */
+const FACTORIZE_HOSTS: number[] = [];
+for (let n = 4; n <= 100; n++) if (!isPrimeNum(n) && factorList(n).length <= 4) FACTORIZE_HOSTS.push(n);
+
+/** 质数与合数（数感地基 3/5）：辨质数 35% / 分解质因数 45% / 质因数个数与最小质因数 20% */
+const genPrimeSense: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.35) {
+    // 辨质数
+    const c = pick(rng, PRIMES_100);
+    const traps: Trap[] = [];
+    if (rng() < 0.2) traps.push({ value: text('1'), trap: '1 既不是质数也不是合数' });
+    const used = new Set<number>();
+    while (traps.length < 3) {
+      const t = pick(rng, PSEUDO_PRIMES);
+      if (used.has(t)) continue;
+      used.add(t);
+      const sp = smallestPrimeFactor(t);
+      traps.push({ value: text(String(t)), trap: `${t} = ${sp} × ${t / sp}，是合数` });
+    }
+    return makeQuestion(text('下面哪个是质数？'), '判断', text(String(c)), traps);
+  }
+  if (kind < 0.8) {
+    // 分解质因数：选标准写法
+    const N = pick(rng, FACTORIZE_HOSTS);
+    const list = factorList(N);
+    const correct = factorText(N);
+    const traps: Trap[] = [];
+    if (list.length >= 3) {
+      // 未分完：合并前两个因子（如 12 = 4×3）
+      const merged = list[0] * list[1];
+      traps.push({
+        value: text(factorListText([merged, ...list.slice(2)])),
+        trap: `${merged} 不是质数，要分解到每个数都是质数`,
+      });
+    } else {
+      traps.push({ value: text(`1×${correct}`), trap: '1 不是质数，分解质因数不能写 1' });
+    }
+    // 少乘一个：去掉最后一个因子
+    const prod1 = N / list[list.length - 1];
+    traps.push({ value: text(factorListText(list.slice(0, -1))), trap: `乘积只有 ${prod1}，少乘了一个质因数` });
+    // 乘积错：最小因子 +1
+    const listW = [list[0] + 1, ...list.slice(1)].sort((x, y) => x - y);
+    let prodW = 1;
+    for (const f of listW) prodW *= f;
+    traps.push({ value: text(factorListText(listW)), trap: `乘积是 ${prodW}，不是 ${N}` });
+    return makeQuestion(text(`把 ${N} 分解质因数`), '选出标准写法', text(correct), traps);
+  }
+  if (rng() < 0.5) {
+    // 不同质因数个数（只出 ≥2 个质因子的合数）
+    let N = pick(rng, FACTORIZE_HOSTS);
+    for (let tries = 0; tries < 50 && factorize(N).length < 2; tries++) N = pick(rng, FACTORIZE_HOSTS);
+    const cnt = factorize(N).length;
+    const total = factorList(N).length;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, total * 10, '相同的质因数只算一个，不能重复计数', cnt * 10);
+    pushTextTrap(traps, (cnt - 1) * 10, '漏数了一个质因数', cnt * 10);
+    pushTextTrap(traps, (cnt + 1) * 10, '多算了一个，相同的质因数只算一次', cnt * 10);
+    fillTextTraps(traps, cnt * 10);
+    return makeQuestion(text(String(N)), '它的不同质因数有几个？', text(String(cnt)), traps);
+  }
+  // 最小质因数
+  const N = pick(rng, FACTORIZE_HOSTS);
+  const primes = factorize(N).map(([p]) => p);
+  const spf = primes[0];
+  const traps: Trap[] = [];
+  if (primes.length > 1)
+    pushTextTrap(traps, primes[primes.length - 1] * 10, `那是 ${N} 的质因数，但不是最小的`, spf * 10);
+  pushTextTrap(traps, 10, '1 不是质数', spf * 10);
+  pushTextTrap(
+    traps,
+    (spf + 1) * 10,
+    N % (spf + 1) === 0 ? `${spf + 1} 是 ${N} 的质因数，但不是最小的` : `${spf + 1} 不能整除 ${N}`,
+    spf * 10,
+  );
+  fillTextTraps(traps, spf * 10);
+  return makeQuestion(text(String(N)), '它的最小质因数是？', text(String(spf)), traps);
+};
+
+/** 最大公因数（数感地基 4/5）：倍数关系 30% / 常见小数字对 30% / 互质对 20% / 稍大常见对 20% */
+const genGcdSense: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.3) {
+    // 倍数关系：答案是小数本身
+    const a = 3 + Math.floor(rng() * 10); // 3~12
+    const k = 2 + Math.floor(rng() * 7); // 2~8
+    const b = a * k;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, b * 10, '那是最小公倍数！倍数关系中，最大公因数是较小的数本身', a * 10);
+    pushTextTrap(traps, 10, '1 是所有数的公因数，但它们有更大的', a * 10);
+    pushTextTrap(traps, (a + 1) * 10, `${a + 1} 不能整除 ${a}`, a * 10);
+    return makeQuestion(text(`${a} 和 ${b}`), '最大公因数是？', text(String(a)), traps);
+  }
+  if (kind < 0.6) {
+    // 常见小数字对：g∈2~9 × 互质乘数对，两数 ≤ 50
+    let g = 2;
+    let a = 4;
+    let b = 6;
+    for (let tries = 0; tries < 50; tries++) {
+      const tg = pick(rng, [2, 3, 4, 5, 6, 7, 8, 9]);
+      const [x, y] = pick(rng, COP_MULT);
+      if (tg * y <= 50) {
+        g = tg;
+        a = tg * x;
+        b = tg * y;
+        break;
+      }
+    }
+    const traps: Trap[] = [];
+    for (let d = 2; d < g; d++) {
+      if (g % d === 0) pushTextTrap(traps, d * 10, `${d} 也是公因数，但不是最大的`, g * 10);
+    }
+    pushTextTrap(traps, 10, `1 是公因数，但 ${a} 和 ${b} 都能被 ${g} 整除`, g * 10);
+    pushTextTrap(traps, (b - a) * 10, '两数之差不是最大公因数', g * 10);
+    pushTextTrap(traps, (g + 1) * 10, `${g + 1} 不能同时整除 ${a} 和 ${b}`, g * 10);
+    fillTextTraps(traps, g * 10);
+    return makeQuestion(text(`${a} 和 ${b}`), '最大公因数是？', text(String(g)), traps);
+  }
+  if (kind < 0.8) {
+    // 互质对：答案是 1
+    const [a, b] = pick(rng, COP_PAIRS);
+    const traps: Trap[] = [];
+    pushTextTrap(traps, Math.min(a, b) * 10, '较小数整除不了较大数——它们互质，最大公因数就是 1', 10);
+    pushTextTrap(traps, smallestPrimeFactor(a) * 10, `${smallestPrimeFactor(a)} 能整除 ${a}，但整除不了 ${b}`, 10);
+    pushTextTrap(traps, smallestPrimeFactor(b) * 10, `${smallestPrimeFactor(b)} 能整除 ${b}，但整除不了 ${a}`, 10);
+    fillTextTraps(traps, 10);
+    return makeQuestion(text(`${a} 和 ${b}`), '最大公因数是？', text('1'), traps);
+  }
+  // 稍大常见对：g ∈ {6,8,9,10,12,15,20,25} × 互质乘数对，两数 ≤ 100
+  let g = 6;
+  let a = 12;
+  let b = 18;
+  for (let tries = 0; tries < 50; tries++) {
+    const tg = pick(rng, [6, 8, 9, 10, 12, 15, 20, 25]);
+    const [x, y] = pick(rng, COP_MULT);
+    if (tg * y <= 100) {
+      g = tg;
+      a = tg * x;
+      b = tg * y;
+      break;
+    }
+  }
+  const L = (a * b) / g;
+  const traps: Trap[] = [];
+  if (L <= 200) pushTextTrap(traps, L * 10, '那是公倍数，不是公因数！问的是最大公因数', g * 10);
+  pushTextTrap(traps, (g / smallestPrimeFactor(g)) * 10, `${g / smallestPrimeFactor(g)} 是公因数，但不是最大的`, g * 10);
+  pushTextTrap(traps, 10, `它们都能被 ${g} 整除，1 不是最大的`, g * 10);
+  fillTextTraps(traps, g * 10);
+  return makeQuestion(text(`${a} 和 ${b}`), '最大公因数是？', text(String(g)), traps);
+};
+
+/** 最小公倍数（数感地基 5/5）：倍数关系 30% / 互质对 30% / 有公因数对 40% */
+const genLcmSense: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.3) {
+    // 倍数关系：答案是大数本身
+    const a = 3 + Math.floor(rng() * 10); // 3~12
+    const k = 2 + Math.floor(rng() * 7); // 2~8
+    const b = a * k;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, a * b * 10, '倍数关系不用乘！大数本身就是最小公倍数', b * 10);
+    pushTextTrap(traps, a * 10, '那是最大公因数，不是公倍数', b * 10);
+    pushTextTrap(traps, b * 2 * 10, '是公倍数，但不是最小的', b * 10);
+    return makeQuestion(text(`${a} 和 ${b}`), '最小公倍数是？', text(String(b)), traps);
+  }
+  if (kind < 0.6) {
+    // 互质对：答案是乘积
+    const [a, b] = pick(rng, COP_PAIRS_SMALL);
+    const P = a * b;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, Math.max(a, b) * 10, '互质的两个数，最小公倍数是它们的乘积', P * 10);
+    pushTextTrap(traps, (a + b) * 10, '公倍数不是把两数相加', P * 10);
+    pushTextTrap(traps, Math.min(a, b) * 10, `${Math.min(a, b)} 不是 ${Math.max(a, b)} 的倍数`, P * 10);
+    fillTextTraps(traps, P * 10);
+    return makeQuestion(text(`${a} 和 ${b}`), '最小公倍数是？', text(String(P)), traps);
+  }
+  // 有公因数对（主战场）：L = 乘积 ÷ 最大公因数
+  const [a, b] = pick(rng, LCM_PAIRS);
+  const g = gcd(a, b);
+  const L = (a * b) / g;
+  const traps: Trap[] = [];
+  pushTextTrap(traps, a * b * 10, `${a * b} 是公倍数但不是最小的——它们有公因数 ${g}`, L * 10);
+  pushTextTrap(traps, g * 10, '那是最大公因数！公倍数要比两个数都大', L * 10);
+  pushTextTrap(traps, Math.max(a, b) * 10, `${Math.max(a, b)} 不是 ${Math.min(a, b)} 的倍数`, L * 10);
+  return makeQuestion(text(`${a} 和 ${b}`), '最小公倍数是？', text(String(L)), traps);
+};
+
+const factorSenseSkill: Skill = {
+  id: 'g5-ns-factor',
+  title: '因数枚举',
+  intro: [
+    '考核点：因数识别与配对枚举（数感地基 1/5）',
+    '因数成对出现：24 = 1×24 = 2×12 = 3×8 = 4×6，别漏 1 和它自己！',
+    '这是最大公因数的前置功夫',
+    '每题限时 6 秒，答错扣分，连续答对有加成！',
+  ],
+  timeLimitSec: 6,
+  questionCount: 10,
+  numericKeypad: true,
+  generators: [genFactorSense],
+};
+
+const divisSenseSkill: Skill = {
+  id: 'g5-ns-divis',
+  title: '整除特征',
+  intro: [
+    '考核点：不试除，一眼看出能不能整除（数感地基 2/5）',
+    '3 和 9 看数字和；2、5、10 看个位；4 和 25 看末两位',
+    '6 = 2 × 3，两个条件都要满足',
+    '每题限时 5 秒，答错扣分，连续答对有加成！',
+  ],
+  timeLimitSec: 5,
+  questionCount: 10,
+  numericKeypad: true,
+  generators: [genDivisSense],
+};
+
+const primeSenseSkill: Skill = {
+  id: 'g5-ns-prime',
+  title: '质数与合数',
+  intro: [
+    '考核点：辨质数 + 分解质因数（数感地基 3/5）',
+    '小心伪装者：51 = 3×17、57 = 3×19、91 = 7×13！',
+    '分解质因数要分到每个数都是质数：12 = 2²×3，写成 2×6 不算完',
+    '每题限时 6 秒，答错扣分，连续答对有加成！',
+  ],
+  timeLimitSec: 6,
+  questionCount: 10,
+  supportsReview: false, // 分解质因数写法（2²×3）键盘输不了，只出选择题
+  generators: [genPrimeSense],
+};
+
+const gcdSenseSkill: Skill = {
+  id: 'g5-ns-gcd',
+  title: '最大公因数',
+  intro: [
+    '考核点：最大公因数秒答（数感地基 4/5，约分的地基）',
+    '倍数关系 → 较小数本身；互质 → 1',
+    '其它情况：找公有因数里最大的一个',
+    '每题限时 6 秒，答错扣分，连续答对有加成！',
+  ],
+  timeLimitSec: 6,
+  questionCount: 10,
+  numericKeypad: true,
+  generators: [genGcdSense],
+};
+
+const lcmSenseSkill: Skill = {
+  id: 'g5-ns-lcm',
+  title: '最小公倍数',
+  intro: [
+    '考核点：最小公倍数秒答（数感地基 5/5，通分的地基）',
+    '倍数关系 → 较大数本身；互质 → 直接相乘',
+    '有公因数 → 乘积 ÷ 最大公因数（例如 6 和 8：48 ÷ 2 = 24）',
+    '每题限时 6 秒，答错扣分，连续答对有加成！',
+  ],
+  timeLimitSec: 6,
+  questionCount: 10,
+  numericKeypad: true,
+  generators: [genLcmSense],
+};
+
 /* ---------------- 年级树（2024 沪教版五四制归类：原子能力归最早系统学习的年级） ---------------- */
 
 export const GRADES: Grade[] = [
@@ -1955,6 +2510,7 @@ export const GRADES: Grade[] = [
     title: '五年级 · 分数与小数',
     available: true,
     units: [
+      { id: 'g5-num-sense', title: '5.0 数感地基 · 因数与倍数', skills: [factorSenseSkill, divisSenseSkill, primeSenseSkill, gcdSenseSkill, lcmSenseSkill] },
       { id: 'g5-frac-meaning', title: '5.1 分数的意义与改写', skills: [rewriteSkill] },
       { id: 'g5-frac-simplify', title: '5.2 约分', skills: [simplifySkill] },
       { id: 'g5-frac-lcd', title: '5.3 通分', skills: [lcdSkill] },

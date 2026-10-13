@@ -19,6 +19,7 @@
 		5DADECA1217410A89F395D04 /* BankConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1725D688F35AE489BE0289 /* BankConvert.swift */; };
 		60A5BDC0980CF6965D53EB0D /* QuizIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2328CBF6B1CFF6845986CB0F /* QuizIntroView.swift */; };
 		73683132AEC9E5ECFB4642AE /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D842AA810CBD30CC707CDCE /* SoundPlayer.swift */; };
+		752395ADB27969431C94FF6F /* BankNumSense.swift in Sources */ = {isa = PBXBuildFile; fileRef = B194FB5589556ABE9D22B542 /* BankNumSense.swift */; };
 		7CBCA74413AD899122ED07B5 /* BankArith.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D95E08DB57B444EDA88B69D /* BankArith.swift */; };
 		7EBE4C4C751D39F5F155D3B3 /* WishBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39280F5F4C9DB5081F0B325B /* WishBannerView.swift */; };
 		865560D7FC1E1AAA52838847 /* correct.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 52058D2935E44C2F5DA6FF99 /* correct.mp3 */; };
@@ -53,6 +54,7 @@
 		7D86A9B31082B5885F22D41E /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9D842AA810CBD30CC707CDCE /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		A43F9FDD963A719AC75E0885 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		B194FB5589556ABE9D22B542 /* BankNumSense.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankNumSense.swift; sourceTree = "<group>"; };
 		B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSigned.swift; sourceTree = "<group>"; };
 		BB5E7383AE55785F14B2F086 /* StudyLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyLog.swift; sourceTree = "<group>"; };
 		C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankAdvanced.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				C37BC0D965D50ABDBFAD5BF4 /* BankAdvanced.swift */,
 				2D95E08DB57B444EDA88B69D /* BankArith.swift */,
 				EB1725D688F35AE489BE0289 /* BankConvert.swift */,
+				B194FB5589556ABE9D22B542 /* BankNumSense.swift */,
 				B5313F8EEB38B2DAF2A396FA /* BankSigned.swift */,
 				0C098C26900226946EDCC802 /* BankSupport.swift */,
 				60850F1BD74C268D8C9595D6 /* InputParser.swift */,
@@ -240,6 +243,7 @@
 				57E43246007AC221D3988CD2 /* BankAdvanced.swift in Sources */,
 				7CBCA74413AD899122ED07B5 /* BankArith.swift in Sources */,
 				5DADECA1217410A89F395D04 /* BankConvert.swift in Sources */,
+				752395ADB27969431C94FF6F /* BankNumSense.swift in Sources */,
 				E3E574E2C0B117F4950DF544 /* BankSigned.swift in Sources */,
 				E45424107374908575E4A151 /* BankSupport.swift in Sources */,
 				E730D4D60756FBE80E0DD2BF /* HomeView.swift in Sources */,
@@ -390,7 +394,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";
@@ -418,7 +422,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = RF285L848A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "数学不再难";

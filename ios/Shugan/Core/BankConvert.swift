@@ -101,17 +101,29 @@ let rationalConvertSkill = Skill(
 
 /* ---------------- 分数改写（假分数 ⇄ 带分数） ---------------- */
 
-/** 改写用的随机参数：分母 2/3/4/5/6/8，整数部分 1~6，余数与分母互质 */
+/** 改写用的随机参数：分母池 {2~10, 12}（2026-10-14 教材对标扩充），整数部分 1~9（原 1~6），余数与分母互质 */
 func randomRewriteParams(_ rng: Mulberry32) -> (d: Int, r: Int, w: Int, n: Int) {
     let d = pick(rng, REWRITE_DENOMINATORS)
     let r = randomNumerator(rng, d)
-    let w = 1 + Int(rng.next() * 6)
+    let w = 1 + Int(rng.next() * 9)
     return (d, r, w, w * d + r)
 }
 
-/** A2-a：假分数 → 带分数（如 7/6 = 1⅙） */
+/** A2-a：假分数 → 带分数（如 7/6 = 1⅙），约 10% 为整除特例（如 12/4 = 3） */
 func genImproperToMixed(_ rng: Mulberry32) -> Question {
     let p = randomRewriteParams(rng)
+    // 整除特例（教材要求掌握"假分数化整数"形态）：分子刚好是分母的倍数
+    if rng.next() < 0.1 {
+        var traps: [Trap] = [
+            (text(String(p.w + 1)), "商算大了，分一分数里面有几个分母"),
+            (mixed(p.w, 1, p.d), "正好整除，没有余数，答案直接写整数"),
+            (frac(p.d, p.w * p.d), "分子分母写反了，假分数的值大于 1"),
+        ]
+        if p.w >= 2 {
+            traps.append((text(String(p.w - 1)), "商算小了，剩下的部分还够再分一份"))
+        }
+        return makeQuestion(rng: rng, prompt: frac(p.w * p.d, p.d), requirement: "化成整数或带分数", correct: text(String(p.w)), traps: traps)
+    }
     var traps: [Trap] = [
         (mixed(p.w + 1, p.r, p.d), "商算大了，分一分数里面有几个分母"),
         (frac(p.r, p.d), "漏掉了整数部分"),
@@ -124,6 +136,9 @@ func genImproperToMixed(_ rng: Mulberry32) -> Question {
     if p.w >= 2 {
         traps.append((mixed(p.w - 1, p.r, p.d), "商算小了，剩下的部分还够再分一份"))
     }
+    if p.w < p.d {
+        traps.append((mixed(p.r, p.w, p.d), "商和余数写反了：商是整数部分、余数才是分子"))
+    }
     return makeQuestion(rng: rng, prompt: frac(p.n, p.d), requirement: "用带分数表示", correct: mixed(p.w, p.r, p.d), traps: traps)
 }
 
@@ -132,6 +147,7 @@ func genMixedToImproper(_ rng: Mulberry32) -> Question {
     let p = randomRewriteParams(rng)
     var traps: [Trap] = [
         (frac(p.w + p.r, p.d), "整数部分要先乘分母再加分子，不是直接相加"),
+        (frac(p.w * p.d, p.d), "整数 × 分母之后，还要加上原来的分子"),
         (frac(p.r, p.d), "漏掉了整数部分"),
         (frac((p.w + 1) * p.d + p.r, p.d), "整数部分看错了，多数了一份"),
     ]

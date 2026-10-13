@@ -245,20 +245,31 @@ const rationalConvertSkill: Skill = {
 
 /* ---------------- 六年级 · 数感基础（P1：原子能力训练） ---------------- */
 
-/** 改写用的分母与随机参数：分母 2/3/4/5/6/8，整数部分 1~6，余数与分母互质 */
-const REWRITE_DENOMINATORS = [2, 3, 4, 5, 6, 8];
+/** 改写用的分母与随机参数：分母池 {2~10, 12}（2026-10-14 教材对标扩充，原 2/3/4/5/6/8），
+ *  整数部分 1~9（原 1~6），余数与分母互质 */
+const REWRITE_DENOMINATORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
 function randomRewriteParams(rng: () => number) {
   const d = pick(rng, REWRITE_DENOMINATORS);
   const r = randomNumerator(rng, d);
-  const w = 1 + Math.floor(rng() * 6);
+  const w = 1 + Math.floor(rng() * 9);
   return { d, r, w, n: w * d + r };
 }
 
-/** A2-a 分数改写：假分数 → 带分数（如 7/6 = 1⅙）
- *  干扰项误区池：余数看错 / 商大 1 / 商小 1 / 漏整数部分 / 颠倒成真分数 */
+/** A2-a 分数改写：假分数 → 带分数（如 7/6 = 1⅙），约 10% 为整除特例（如 12/4 = 3）
+ *  干扰项误区池：余数看错 / 商大 1 / 商小 1 / 漏整数部分 / 颠倒成真分数 / 商余写反 */
 const genImproperToMixed: QuestionGenerator = (rng) => {
   rngGlobal = rng;
   const { d, r, w, n } = randomRewriteParams(rng);
+  // 整除特例（教材要求掌握"假分数化整数"形态）：分子刚好是分母的倍数
+  if (rng() < 0.1) {
+    const traps: Trap[] = [
+      { value: text(String(w + 1)), trap: '商算大了，分一分数里面有几个分母' },
+      { value: mixed(w, 1, d), trap: '正好整除，没有余数，答案直接写整数' },
+      { value: frac(d, w * d), trap: '分子分母写反了，假分数的值大于 1' },
+    ];
+    if (w >= 2) traps.push({ value: text(String(w - 1)), trap: '商算小了，剩下的部分还够再分一份' });
+    return makeQuestion(frac(w * d, d), '化成整数或带分数', text(String(w)), traps);
+  }
   const traps: Trap[] = [
     { value: mixed(w + 1, r, d), trap: '商算大了，分一分数里面有几个分母' },
     { value: frac(r, d), trap: '漏掉了整数部分' },
@@ -269,16 +280,19 @@ const genImproperToMixed: QuestionGenerator = (rng) => {
     traps.push({ value: mixed(w, pick(rng, r2s), d), trap: '余数算错了：商 × 分母 + 余数 = 分子' });
   if (w >= 2)
     traps.push({ value: mixed(w - 1, r, d), trap: '商算小了，剩下的部分还够再分一份' });
+  if (w < d)
+    traps.push({ value: mixed(r, w, d), trap: '商和余数写反了：商是整数部分、余数才是分子' });
   return makeQuestion(frac(n, d), '用带分数表示', mixed(w, r, d), traps);
 };
 
 /** A2-b 分数改写：带分数 → 假分数（如 2⅓ = 7/3）
- *  干扰项误区池：整数+分子直接相加 / 分子算错 / 漏整数部分 / 商大 1 */
+ *  干扰项误区池：整数+分子直接相加 / 忘记加分子 / 分子算错 / 漏整数部分 / 商大 1 */
 const genMixedToImproper: QuestionGenerator = (rng) => {
   rngGlobal = rng;
   const { d, r, w, n } = randomRewriteParams(rng);
   const traps: Trap[] = [
     { value: frac(w + r, d), trap: '整数部分要先乘分母再加分子，不是直接相加' },
+    { value: frac(w * d, d), trap: '整数 × 分母之后，还要加上原来的分子' },
     { value: frac(r, d), trap: '漏掉了整数部分' },
     { value: frac((w + 1) * d + r, d), trap: '整数部分看错了，多数了一份' },
   ];

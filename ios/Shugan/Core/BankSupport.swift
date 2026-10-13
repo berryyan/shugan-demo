@@ -80,7 +80,7 @@ func randomWhole(_ rng: Mulberry32) -> Int {
 /* ---------------- 常考分母与组合 ---------------- */
 
 let DENOMINATORS = [2, 4, 5, 8, 10]          // 小数⇄分数转换
-let REWRITE_DENOMINATORS = [2, 3, 4, 5, 6, 8] // 分数改写
+let REWRITE_DENOMINATORS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12] // 分数改写（2026-10-14 教材对标扩充）
 let CMP_DENOMINATORS = [2, 3, 4, 5, 8, 10]    // 大小比较
 let DECIMAL_OK = [2, 4, 5, 8, 10]             // 除得尽（能整除 1000）
 let ARITH_DENOMS = [2, 3, 4, 5, 6, 8]         // 分数四则

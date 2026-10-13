@@ -277,11 +277,13 @@ struct QuizRunnerView: View {
         input = s
     }
 
-    /** 复习模式：答对自动提交——结构完整 + 数值正确 + 形式合规 + 600ms 无新按键（纯整数不自动提交） */
+    /** 复习模式：答对自动提交——数值正确 + 形式合规 + 600ms 无新按键。
+     *  2026-10-14 放开纯整数：600ms 防抖本身就防"想输 12 才按了 1"抢跑（继续按键会重置计时），
+     *  数感地基单元答案全是整数，不放开则每题都要手动按 ✓。与网页版 QuizRunner.tsx 同步 */
     private func scheduleAutoSubmit() {
         autoSubmitWork?.cancel()
         guard reviewMode, phase == .answering, let q else { return }
-        guard !input.isEmpty, input.contains(where: { "/. ".contains($0) }) else { return }
+        guard !input.isEmpty else { return }
         guard let parsed = parseAnswerInput(input) else { return }
         let correct = q.choices.first { $0.correct }!
         guard abs(parsed.value - exprValue(correct.value)) < 1e-9 else { return }

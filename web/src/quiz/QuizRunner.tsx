@@ -359,11 +359,12 @@ export default function QuizRunner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skill, phase, index, advanced, failRun, timeLimitSec]);
 
-  // 复习模式：答对自动提交——结构完整（含 / . 或带分数空格）+ 数值正确 + 形式合规 + 600ms 无新按键。
-  // 纯整数答案不自动提交，防止"想输 12 才按了 1"被提前结算。
+  // 复习模式：答对自动提交——数值正确 + 形式合规 + 600ms 无新按键。
+  // 2026-10-14 放开纯整数：600ms 防抖本身就防"想输 12 才按了 1"抢跑（继续按键会重置计时），
+  // 数感地基单元答案全是整数，不放开则每题都要手动按 ✓。
   useEffect(() => {
     if (!reviewMode || phase !== 'answering' || !q || !skill) return;
-    if (!input || !/[/. ]/.test(input)) return;
+    if (!input) return;
     const parsed = parseAnswerInput(input);
     if (!parsed) return;
     const correct = q.choices.find((c) => c.correct)!;

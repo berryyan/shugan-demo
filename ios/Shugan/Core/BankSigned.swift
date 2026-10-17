@@ -948,7 +948,7 @@ let signedFracCmpSkill = Skill(
         "含负分数 vs 负小数（先统一形态再比）与等值变形（-1/2 和 -0.5 一样大）",
         "本题型只有闯关和进阶两种模式",
     ],
-    timeLimitSec: 5,
+    timeLimitSec: 6,
     questionCount: 10,
     supportsReview: false,
     generators: [genSignedFracCmp]
@@ -963,7 +963,7 @@ let signedFracFlashSkill = Skill(
         "约一成题目互为相反数，结果等于 0",
         "本题型只有闯关和进阶两种模式",
     ],
-    timeLimitSec: 4,
+    timeLimitSec: 5,
     questionCount: 10,
     supportsReview: false,
     generators: [genSignedFracFlash]

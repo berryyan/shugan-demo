@@ -153,6 +153,37 @@ export function validateSkill(skillId: string, seeds = 500) {
           bad.push(`负数比较判错 ${exprKey(q.prompt)} ans=${exprKey(ans)}`);
         }
       }
+      // 负分数比大小：复用同一判定（含负分数/负小数）
+      if (skillId === 'g6-signed-frac-cmp' && q.prompt.kind === 'vs') {
+        const vL = exprValue(q.prompt.left);
+        const vR = exprValue(q.prompt.right);
+        const isEq = Math.abs(vL - vR) < 1e-9;
+        if (isEq) {
+          equalCount++;
+          if (exprKey(ans) !== '一样大') bad.push(`等值判错 ${exprKey(q.prompt)}`);
+        } else if (Math.abs(exprValue(ans) - Math.max(vL, vR)) > 1e-9) {
+          bad.push(`负分数比较判错 ${exprKey(q.prompt)} ans=${exprKey(ans)}`);
+        }
+      }
+      // 分数符号快闪：正确选项标签必须与题面结果符号一致
+      if (skillId === 'g6-signed-frac-flash') {
+        if (q.prompt.kind !== 'op') bad.push(`题面非运算式 ${exprKey(q.prompt)}`);
+        else {
+          const v = exprValue(q.prompt);
+          const want = v > 0 ? '正数' : v < 0 ? '负数' : '等于 0';
+          if (exprKey(ans) !== want) bad.push(`分数符号判错 ${exprKey(q.prompt)} v=${v} ans=${exprKey(ans)}`);
+          if (v === 0) equalCount++;
+        }
+      }
+      // 分数正负加减（基础/进阶）：答案值等于题面运算结果、最简（分子取绝对值判 gcd）、4 选项
+      if (skillId === 'g6-signed-frac-basic' || skillId === 'g6-signed-frac-adv') {
+        if (q.prompt.kind !== 'op') bad.push(`题面非运算式 ${exprKey(q.prompt)}`);
+        else if (Math.abs(exprValue(ans) - exprValue(q.prompt)) > 1e-9) {
+          bad.push(`分数正负运算答案错 ${exprKey(q.prompt)} ans=${exprKey(ans)}`);
+        }
+        if (ans.kind === 'frac' && gcd(Math.abs(Number(ans.n)), Number(ans.d)) !== 1) reducible++;
+        if (q.choices.length !== 4) bad.push(`选项不足4个 ${exprKey(q.prompt)}`);
+      }
       // 乘除符号快闪：结果永远非零，符号与答案标签一致
       if (skillId === 'g6-sign-flash-mul') {
         if (q.prompt.kind !== 'op') bad.push(`题面非运算式 ${exprKey(q.prompt)}`);
@@ -266,5 +297,9 @@ export function validateAll() {
     primeSense: validateSkill('g5-ns-prime'),
     gcdSense: validateSkill('g5-ns-gcd'),
     lcmSense: validateSkill('g5-ns-lcm'),
+    signedFracCmp: validateSkill('g6-signed-frac-cmp'),
+    signedFracFlash: validateSkill('g6-signed-frac-flash'),
+    signedFracBasic: validateSkill('g6-signed-frac-basic'),
+    signedFracAdv: validateSkill('g6-signed-frac-adv'),
   };
 }

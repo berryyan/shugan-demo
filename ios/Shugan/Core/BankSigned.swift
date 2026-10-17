@@ -566,3 +566,438 @@ let signedMulSkill = Skill(
     numericKeypad: true,
     generators: [genSignedMulDiv]
 )
+
+/* ---------------- 六年级 · 有理数：负分数（分数线 × 负号线交叉，2026-10-17 新增） ----------------
+ * 与 bank.ts 同名生成器逐行对应。负分数一律用 frac("-n","d")（负号在分子里）表示，
+ * 渲染层把负号前置到分数线左边并标红。id 统一 g6-signed-frac- 前缀。
+ */
+
+/** 带符号运算结果 → MathExpr：整数 → text；其余 → 最简分数（负号在分子）；不产生带分数 */
+func sAnsExpr(_ n: Int, _ d: Int) -> MathExpr {
+    let (rn, rd) = reduce2(n, d)
+    if rn % rd == 0 { return text(rn / rd) }
+    return frac(rn, rd)
+}
+
+/** 需要"两个不同分子"的同分母分支专用分母表：剔除 2（最简分子只有 1 个，抽不出两个） */
+let SIGNED_PAIR_DENOMS = [3, 4, 5, 6, 8]
+
+/** 带符号形态陷阱：可约分时出"未约分等价"（数值故意相等）。gcd 对负 N 失效（返回负），用绝对值判断 */
+func sFormTraps(_ traps: inout [Trap], _ N: Int, _ D: Int) {
+    if gcd(abs(N), abs(D)) > 1 {
+        traps.append((frac(N, D), "数值相等但没有约成最简，还要继续约分"))
+    }
+}
+
+/** 负分数比大小（三选一 vs 题）：负vs负 40%（同分子/同分母各半）/ 负分数vs负小数 25% / 正vs负 20% / 等值变形 15% */
+func genSignedFracCmp(_ rng: Mulberry32) -> Question {
+    let sameT = text("一样大")
+    let r0 = rng.next()
+    if r0 < 0.15 {
+        // 等值变形：-1/2 vs -0.5（小数转换是已训练的原子能力，这里考"负号不改变相等关系"）
+        let d = pick(rng, DECIMAL_OK)
+        let n = randomNumerator(rng, d)
+        let f = frac(-n, d)
+        let t = text("-" + fracToDecimalText(n, d))
+        let traps: [Trap] = [
+            (f, "两边其实相等：1/2 就是 0.5，负号不改变大小关系"),
+            (t, "两边其实相等：1/2 就是 0.5，负号不改变大小关系"),
+        ]
+        return makeQuestion(rng: rng, prompt: .vs(left: f, right: t), requirement: "哪边更大？", correct: sameT, traps: traps)
+    }
+    if r0 < 0.55 {
+        // 负 vs 负：同分子（分母大的反而小）/ 同分母（分子大的反而小）各半
+        var n1 = 0, n2 = 0, d1 = 0, d2 = 0
+        if rng.next() < 0.5 {
+            d1 = pick(rng, ARITH_DENOMS)
+            d2 = pick(rng, ARITH_DENOMS)
+            var tries = 0
+            while tries < 60 && d2 == d1 {
+                d2 = pick(rng, ARITH_DENOMS)
+                tries += 1
+            }
+            let lo = min(d1, d2)
+            let cands = coprimeNumerators(lo).filter { gcd($0, d1) == 1 && gcd($0, d2) == 1 }
+            n1 = pick(rng, cands)
+            n2 = n1
+        } else {
+            let dd = pick(rng, SIGNED_PAIR_DENOMS)
+            d1 = dd
+            d2 = dd
+            n1 = randomNumerator(rng, d1)
+            n2 = randomNumerator(rng, d1, exclude: n1)
+        }
+        let left = frac(-n1, d1)
+        let right = frac(-n2, d2)
+        let leftBigger = -Double(n1) / Double(d1) > -Double(n2) / Double(d2)
+        let bigger = leftBigger ? left : right
+        let smaller = leftBigger ? right : left
+        let traps: [Trap] = [
+            (smaller, "负数比较：绝对值大的反而小"),
+            (sameT, "两边不相等，再仔细比"),
+        ]
+        return makeQuestion(rng: rng, prompt: .vs(left: left, right: right), requirement: "哪边更大？", correct: bigger, traps: traps)
+    }
+    if r0 < 0.8 {
+        // 负分数 vs 负小数：值接近但不同（差 0.05~0.2），必须先统一形态再比
+        let d = pick(rng, DECIMAL_OK)
+        let n = randomNumerator(rng, d)
+        let fMilli = n * (1000 / d)
+        let delta = pick(rng, [50, 100, 150, 200])
+        let up = rng.next() < 0.5
+        let gMilli = up ? min(950, fMilli + delta) : max(50, fMilli - delta)
+        let f = frac(-n, d)
+        let t = text("-" + fracToDecimalText(gMilli, 1000))
+        let fracLeft = rng.next() < 0.5
+        let left = fracLeft ? f : t
+        let right = fracLeft ? t : f
+        let fracBigger = -Double(n) / Double(d) > -Double(gMilli) / 1000
+        let bigger = fracBigger ? f : t
+        let smaller = fracBigger ? t : f
+        let traps: [Trap] = [
+            (smaller, "负数比较：绝对值大的反而小；先统一成分数或小数再比"),
+            (sameT, "两边不相等，差了不到 0.2，仔细转换再比"),
+        ]
+        return makeQuestion(rng: rng, prompt: .vs(left: left, right: right), requirement: "哪边更大？", correct: bigger, traps: traps)
+    }
+    // 正 vs 负：正数永远更大（秒答题，建立符号直觉）
+    let d1 = pick(rng, ARITH_DENOMS)
+    let n1 = randomNumerator(rng, d1)
+    let d2 = pick(rng, ARITH_DENOMS)
+    let n2 = randomNumerator(rng, d2)
+    let posE = frac(n1, d1)
+    let negE = frac(-n2, d2)
+    let negLeft = rng.next() < 0.5
+    let left = negLeft ? negE : posE
+    let right = negLeft ? posE : negE
+    let traps: [Trap] = [
+        (negE, "正数永远比负数大"),
+        (sameT, "一正一负不会相等"),
+    ]
+    return makeQuestion(rng: rng, prompt: .vs(left: left, right: right), requirement: "哪边更大？", correct: posE, traps: traps)
+}
+
+/** 分数符号快闪（三选一）：相反数得 0 12%；其余同分母带符号相加 / 异分母正数相减各半 */
+func genSignedFracFlash(_ rng: Mulberry32) -> Question {
+    let pos = text("正数")
+    let neg = text("负数")
+    let zero = text("等于 0")
+    let hint = "先估绝对值：同分母比分子，异分母先通分再比；符号跟绝对值大的走"
+    let r0 = rng.next()
+    if r0 < 0.12 {
+        // 互为相反数：n/d + (-n/d) = 0
+        let d = pick(rng, ARITH_DENOMS)
+        let n = randomNumerator(rng, d)
+        let first = rng.next() < 0.5
+        let f1 = frac(n, d)
+        let f2 = frac(-n, d)
+        return makeQuestion(
+            rng: rng,
+            prompt: .op(op: "+", terms: first ? [f2, f1] : [f1, f2]),
+            requirement: "不计算，判断结果是正还是负",
+            correct: zero,
+            traps: [
+                (pos, "这两个数互为相反数，相加等于 0"),
+                (neg, "这两个数互为相反数，相加等于 0"),
+            ]
+        )
+    }
+    if r0 < 0.56 {
+        // 同分母带符号相加：一正一负，判号 = 比分子大小（排除相等，不会恰为 0）
+        let d = pick(rng, SIGNED_PAIR_DENOMS)
+        let n1 = randomNumerator(rng, d)
+        let n2 = randomNumerator(rng, d, exclude: n1)
+        let negFirst = rng.next() < 0.5
+        let terms = negFirst ? [frac(-n1, d), frac(n2, d)] : [frac(n1, d), frac(-n2, d)]
+        let v = negFirst ? n2 - n1 : n1 - n2
+        let correct = v > 0 ? pos : neg
+        let ck = exprKey(correct)
+        let traps: [Trap] = [pos, neg, zero]
+            .filter { exprKey($0) != ck }
+            .map { ($0, exprKey($0) == "等于 0" ? "两个分子不一样大，不会等于 0" : hint) }
+        return makeQuestion(rng: rng, prompt: .op(op: "+", terms: terms), requirement: "不计算，判断结果是正还是负", correct: correct, traps: traps)
+    }
+    // 异分母正数相减：n1/d1 - n2/d2，要先通分才知道谁大（排除等值）
+    let p = pick(rng, MULTIPLE_PAIRS + COPRIME_PAIRS)
+    let d1 = p.0
+    let d2 = p.1
+    let n1 = randomNumerator(rng, d1)
+    var n2 = randomNumerator(rng, d2)
+    var tries = 0
+    while tries < 60 && n1 * d2 == n2 * d1 {
+        n2 = randomNumerator(rng, d2)
+        tries += 1
+    }
+    let v = n1 * d2 - n2 * d1
+    let correct = v > 0 ? pos : neg
+    let ck = exprKey(correct)
+    let traps: [Trap] = [pos, neg, zero]
+        .filter { exprKey($0) != ck }
+        .map { ($0, exprKey($0) == "等于 0" ? "通分后分子不一样大，不会等于 0" : hint) }
+    return makeQuestion(
+        rng: rng,
+        prompt: .op(op: "-", terms: [frac(n1, d1), frac(n2, d2)]),
+        requirement: "不计算，判断结果是正还是负",
+        correct: correct,
+        traps: traps
+    )
+}
+
+/** 分数正负加减·基础：同分母带符号 45% + 倍数分母 30% + 不够减（结果为负）25% */
+func genSignedFracBasic(_ rng: Mulberry32) -> Question {
+    let r0 = rng.next()
+    if r0 < 0.45 {
+        // 同分母带符号：通分零负担，专注符号规则
+        let d = pick(rng, SIGNED_PAIR_DENOMS)
+        let n1 = randomNumerator(rng, d)
+        let n2 = randomNumerator(rng, d, exclude: n1)
+        let s1 = rng.next() < 0.5 ? 1 : -1
+        let s2 = rng.next() < 0.5 ? 1 : -1
+        let isSub = rng.next() < 0.5
+        let e2 = isSub ? -s2 : s2 // 第二项实际参与运算的符号
+        let N = s1 * n1 + e2 * n2
+        let correctVal = Double(N) / Double(d)
+        var traps: [Trap] = []
+        pushTrap(&traps, sAnsExpr(-N, d), "符号看反了", correctVal)
+        pushTrap(&traps, sAnsExpr(s1 * n1 - e2 * n2, d), isSub ? "减去一个数 = 加上它的相反数，符号要变" : "加负数 = 减正数，符号看错了", correctVal)
+        pushTrap(&traps, sAnsExpr(n1 + n2, d), "异号相加是绝对值抵消，不是相加", correctVal)
+        sFormTraps(&traps, N, d)
+        fillTraps(&traps, N, d)
+        return makeQuestion(
+            rng: rng,
+            prompt: .op(op: isSub ? "-" : "+", terms: [frac(s1 * n1, d), frac(s2 * n2, d)]),
+            requirement: "计算（注意正负号）",
+            correct: sAnsExpr(N, d),
+            traps: traps
+        )
+    }
+    if r0 < 0.75 {
+        // 倍数分母带符号：通分是小倍数，专注符号
+        let p = pick(rng, MULTIPLE_PAIRS)
+        let d1 = p.0
+        let d2 = p.1
+        let n1 = randomNumerator(rng, d1)
+        let n2 = randomNumerator(rng, d2)
+        let s1 = rng.next() < 0.5 ? 1 : -1
+        let s2 = rng.next() < 0.5 ? 1 : -1
+        let isSub = rng.next() < 0.5
+        let e2 = isSub ? -s2 : s2
+        let D = lcm(d1, d2)
+        let m1 = n1 * (D / d1)
+        let m2 = n2 * (D / d2)
+        let N = s1 * m1 + e2 * m2
+        let correctVal = Double(N) / Double(D)
+        var traps: [Trap] = []
+        pushTrap(&traps, sAnsExpr(-N, D), "符号看反了", correctVal)
+        pushTrap(&traps, sAnsExpr(s1 * m1 - e2 * m2, D), isSub ? "减去一个数 = 加上它的相反数，符号要变" : "加负数 = 减正数，符号看错了", correctVal)
+        pushTrap(&traps, sAnsExpr(s1 * n1 + e2 * n2, D), "通分后分子也要乘同样的倍数", correctVal)
+        sFormTraps(&traps, N, D)
+        fillTraps(&traps, N, D)
+        return makeQuestion(
+            rng: rng,
+            prompt: .op(op: isSub ? "-" : "+", terms: [frac(s1 * n1, d1), frac(s2 * n2, d2)]),
+            requirement: "计算（注意正负号）",
+            correct: sAnsExpr(N, D),
+            traps: traps
+        )
+    }
+    // 不够减专项：正数 − 正数，结果为负（小学从未见过的结构，初中第一道坎）
+    let q = pickAddSubPair(rng)
+    let swap = q.n1 * q.d2 > q.n2 * q.d1
+    let a1 = swap ? q.n2 : q.n1
+    let b1 = swap ? q.d2 : q.d1
+    let a2 = swap ? q.n1 : q.n2
+    let b2 = swap ? q.d1 : q.d2
+    let D = lcm(b1, b2)
+    let N = a1 * (D / b1) - a2 * (D / b2) // ≤ 0
+    let correctVal = Double(N) / Double(D)
+    var traps: [Trap] = []
+    pushTrap(&traps, sAnsExpr(-N, D), "不够减时结果是负数：小数减大数，差的前面加负号，不是倒过来减", correctVal)
+    pushTrap(&traps, sAnsExpr(a1 * (D / b1) + a2 * (D / b2), D), "把减法算成加法了", correctVal)
+    pushTrap(&traps, sAnsExpr(N + 1, D), "分子减错了，再算一遍", correctVal)
+    sFormTraps(&traps, N, D)
+    fillTraps(&traps, N, D)
+    return makeQuestion(
+        rng: rng,
+        prompt: .op(op: "-", terms: [frac(a1, b1), frac(a2, b2)]),
+        requirement: "计算（注意正负号）",
+        correct: sAnsExpr(N, D),
+        traps: traps
+    )
+}
+
+/** 分数正负混合·进阶：互质异号相加 40% + 减负数 30% + 小数分数混合 20% + 三项代数和 10% */
+func genSignedFracAdv(_ rng: Mulberry32) -> Question {
+    let r0 = rng.next()
+    if r0 < 0.4 {
+        // 互质分母严格异号相加：一正一负，考"抵消 + 符号跟绝对值大的走"
+        let p = pick(rng, COPRIME_PAIRS)
+        let d1 = p.0
+        let d2 = p.1
+        let n1 = randomNumerator(rng, d1)
+        let n2 = randomNumerator(rng, d2)
+        let negFirst = rng.next() < 0.5
+        let D = lcm(d1, d2)
+        let m1 = n1 * (D / d1)
+        let m2 = n2 * (D / d2)
+        let N = negFirst ? -m1 + m2 : m1 - m2
+        let correctVal = Double(N) / Double(D)
+        var traps: [Trap] = []
+        pushTrap(&traps, sAnsExpr(m1 + m2, D), "异号相加是绝对值抵消，不是相加", correctVal)
+        pushTrap(&traps, sAnsExpr(-m1 - m2, D), "异号相加是绝对值抵消，不是相加", correctVal)
+        pushTrap(&traps, sAnsExpr(-N, D), "符号看反了：跟绝对值大的数走", correctVal)
+        sFormTraps(&traps, N, D)
+        fillTraps(&traps, N, D)
+        return makeQuestion(
+            rng: rng,
+            prompt: .op(op: "+", terms: [frac(negFirst ? -n1 : n1, d1), frac(negFirst ? n2 : -n2, d2)]),
+            requirement: "计算（注意正负号）",
+            correct: sAnsExpr(N, D),
+            traps: traps
+        )
+    }
+    if r0 < 0.7 {
+        // 减负数：正 − 负 = 相加、负 − 正 = 负的相加，各半
+        let p = pick(rng, MULTIPLE_PAIRS + COPRIME_PAIRS)
+        let d1 = p.0
+        let d2 = p.1
+        let n1 = randomNumerator(rng, d1)
+        let n2 = randomNumerator(rng, d2)
+        let posMinusNeg = rng.next() < 0.5
+        let D = lcm(d1, d2)
+        let m1 = n1 * (D / d1)
+        let m2 = n2 * (D / d2)
+        let N = posMinusNeg ? m1 + m2 : -m1 - m2
+        let correctVal = Double(N) / Double(D)
+        var traps: [Trap] = []
+        pushTrap(&traps, sAnsExpr(posMinusNeg ? m1 - m2 : -m1 + m2, D), "减负数 = 加正数，符号要变", correctVal)
+        pushTrap(&traps, sAnsExpr(posMinusNeg ? -m1 + m2 : m1 - m2, D), "减负数 = 加正数，符号要变", correctVal)
+        pushTrap(&traps, sAnsExpr(-N, D), "符号看反了", correctVal)
+        sFormTraps(&traps, N, D)
+        fillTraps(&traps, N, D)
+        let terms = posMinusNeg ? [frac(n1, d1), frac(-n2, d2)] : [frac(-n1, d1), frac(n2, d2)]
+        return makeQuestion(rng: rng, prompt: .op(op: "-", terms: terms), requirement: "计算（注意正负号）", correct: sAnsExpr(N, D), traps: traps)
+    }
+    if r0 < 0.9 {
+        // 小数分数混合带符号：小数来自 DEC_ANCHORS 加负号，分数带符号（转换是已训练的原子能力）
+        let anchor = pick(rng, DEC_ANCHORS)
+        let decS = anchor.0
+        let dn = anchor.1
+        let dd = anchor.2
+        let d = pick(rng, ARITH_DENOMS)
+        let n = randomNumerator(rng, d)
+        let decNeg = rng.next() < 0.5
+        let fracNeg = rng.next() < 0.5
+        let isSub = rng.next() < 0.5
+        let D = lcm(dd, d)
+        let sD = decNeg ? -1 : 1
+        let eF = (fracNeg ? -1 : 1) * (isSub ? -1 : 1) // 分数项实际参与运算的符号
+        let N = sD * dn * (D / dd) + eF * n * (D / d)
+        let correctVal = Double(N) / Double(D)
+        var traps: [Trap] = []
+        pushTrap(&traps, sAnsExpr(-N, D), "符号看反了", correctVal)
+        pushTrap(&traps, sAnsExpr(sD * dn * (D / dd) - eF * n * (D / d), D), isSub ? "减去一个数 = 加上它的相反数，符号要变" : "加负数 = 减正数，符号看错了", correctVal)
+        pushTrap(&traps, sAnsExpr(sD * dn * (D / dd) + eF * n, D), "通分后分子也要乘同样的倍数", correctVal)
+        sFormTraps(&traps, N, D)
+        fillTraps(&traps, N, D)
+        return makeQuestion(
+            rng: rng,
+            prompt: .op(op: isSub ? "-" : "+", terms: [text(decNeg ? "-" + decS : decS), frac(fracNeg ? -n : n, d)]),
+            requirement: "计算（注意正负号）",
+            correct: sAnsExpr(N, D),
+            traps: traps
+        )
+    }
+    // 三项代数和：分母组合 [2,3,4] [2,3,6] [3,4,6] [2,4,8]，公分母 ≤ 12
+    let ds = pick(rng, [[2, 3, 4], [2, 3, 6], [3, 4, 6], [2, 4, 8]])
+    let n1 = randomNumerator(rng, ds[0])
+    let n2 = randomNumerator(rng, ds[1])
+    let n3 = randomNumerator(rng, ds[2])
+    let s1 = rng.next() < 0.5 ? 1 : -1
+    let s2 = rng.next() < 0.5 ? 1 : -1
+    let s3 = rng.next() < 0.5 ? 1 : -1
+    let D = lcm(lcm(ds[0], ds[1]), ds[2])
+    let m1 = n1 * (D / ds[0])
+    let m2 = n2 * (D / ds[1])
+    let m3 = n3 * (D / ds[2])
+    let N = s1 * m1 + s2 * m2 + s3 * m3
+    let correctVal = Double(N) / Double(D)
+    var traps: [Trap] = []
+    pushTrap(&traps, sAnsExpr(-N, D), "符号看反了", correctVal)
+    pushTrap(&traps, sAnsExpr(s1 * m1 + s2 * m2 - s3 * m3, D), "最后一项的符号看错了", correctVal)
+    pushTrap(&traps, sAnsExpr((m1 + m2 + m3) * (N >= 0 ? -1 : 1), D), "不能全当同号相加，负项要抵消", correctVal)
+    sFormTraps(&traps, N, D)
+    fillTraps(&traps, N, D)
+    return makeQuestion(
+        rng: rng,
+        prompt: .op(op: "+", terms: [frac(s1 * n1, ds[0]), frac(s2 * n2, ds[1]), frac(s3 * n3, ds[2])]),
+        requirement: "计算（注意正负号）",
+        correct: sAnsExpr(N, D),
+        traps: traps
+    )
+}
+
+/* ---------------- 负分数 Skill 定义 ---------------- */
+
+let signedFracCmpSkill = Skill(
+    id: "g6-signed-frac-cmp",
+    title: "负分数比大小",
+    intro: [
+        "考核点：含负分数的大小比较（教材 1.1 延伸，原子能力 B2 进阶）",
+        "核心直觉：负数比较，绝对值大的反而小（-1/2 < -1/3）",
+        "含负分数 vs 负小数（先统一形态再比）与等值变形（-1/2 和 -0.5 一样大）",
+        "本题型只有闯关和进阶两种模式",
+    ],
+    timeLimitSec: 5,
+    questionCount: 10,
+    supportsReview: false,
+    generators: [genSignedFracCmp]
+)
+
+let signedFracFlashSkill = Skill(
+    id: "g6-signed-frac-flash",
+    title: "分数符号快闪",
+    intro: [
+        "考核点：不计算，判断分数加减结果的正负（原子能力 C3 进阶）",
+        "先估绝对值：同分母比分子，异分母先通分再比；符号跟绝对值大的走",
+        "约一成题目互为相反数，结果等于 0",
+        "本题型只有闯关和进阶两种模式",
+    ],
+    timeLimitSec: 4,
+    questionCount: 10,
+    supportsReview: false,
+    generators: [genSignedFracFlash]
+)
+
+let signedFracBasicSkill = Skill(
+    id: "g6-signed-frac-basic",
+    title: "分数正负加减·基础",
+    intro: [
+        "考核点：带符号分数加减（同分母 45% + 倍数分母 30% + 不够减 25%）",
+        "先定符号再算绝对值；不够减时结果是负数（小数减大数，差的前面加负号）",
+        "答案要约到最简；复习模式键盘有负号键，负数答案先按 − 再输数字",
+    ],
+    timeLimitSec: 10,
+    questionCount: 10,
+    allowNegative: true,
+    acceptImproper: true,
+    hideMixedKey: true,
+    generators: [genSignedFracBasic]
+)
+
+let signedFracAdvSkill = Skill(
+    id: "g6-signed-frac-adv",
+    title: "分数正负混合·进阶",
+    intro: [
+        "考核点：互质分母异号相加 40% + 减负数 30% + 小数分数混合 20% + 三项代数和 10%",
+        "口诀：减去负数 = 加正数；异号相加，符号跟绝对值大的走",
+        "小数都来自常考锚点（0.5、0.25、0.125……），先转换再算",
+        "复习模式键盘有负号键，负数答案先按 − 再输数字",
+    ],
+    timeLimitSec: 14,
+    questionCount: 10,
+    allowNegative: true,
+    acceptImproper: true,
+    hideMixedKey: true,
+    generators: [genSignedFracAdv]
+)

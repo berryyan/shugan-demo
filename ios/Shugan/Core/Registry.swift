@@ -26,8 +26,8 @@ let GRADES: [Grade] = [
         id: "g6",
         title: "六年级上 · 第1章 有理数",
         units: [
-            Unit(id: "g6-1-1", title: "1.1 有理数的引入", skills: [oppositeAbsSkill, signCompareSkill]),
-            Unit(id: "g6-1-2", title: "1.2 有理数的加法与减法", skills: [signFlashSkill, signedAddSkill]),
+            Unit(id: "g6-1-1", title: "1.1 有理数的引入", skills: [oppositeAbsSkill, signCompareSkill, signedFracCmpSkill]),
+            Unit(id: "g6-1-2", title: "1.2 有理数的加法与减法", skills: [signFlashSkill, signedFracFlashSkill, signedAddSkill, signedFracBasicSkill, signedFracAdvSkill]),
             Unit(id: "g6-1-3", title: "1.3 有理数的乘法与除法", skills: [signFlashMulSkill, signedMulSkill]),
             Unit(id: "g6-1-4", title: "1.4 有理数的乘方", skills: [powerFlashSkill]),
             Unit(id: "g6-1-5", title: "1.5 有理数的混合运算", skills: [opOrderSkill, opLawsSkill]),

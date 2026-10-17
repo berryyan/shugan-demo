@@ -1095,6 +1095,445 @@ const signedAddSkill: Skill = {
   generators: [genSignedAddSub],
 };
 
+/* ---------------- 六年级 · 有理数：负分数（分数线 × 负号线交叉，2026-10-17 新增） ----------------
+ * 女儿实测最薄弱点：分数的正负数加减。诊断：五年级分数线全正数（减法重抽保证结果为正），
+ * 六年级负号线只有整数/一位小数，两条线从未交叉。本区补 4 个技能：
+ * - 负分数比大小（1.1，三选一）：负vs负 40%（同分子/同分母各半）/ 负分数vs负小数 25% / 正vs负 20% / 等值变形 15%
+ * - 分数符号快闪（1.2，三选一）：相反数得 0 12%；其余同分母带符号相加 / 异分母正数相减各半
+ * - 分数正负加减·基础（1.2）：同分母带符号 45% + 倍数分母 30% + 不够减（结果为负）25%
+ * - 分数正负混合·进阶（1.2）：互质异号相加 40% + 减负数 30% + 小数分数混合 20% + 三项代数和 10%
+ * 负分数一律用 frac('-n','d')（负号在分子里）表示，渲染层把负号前置到分数线左边并标红。
+ * id 统一用 g6-signed-frac- 前缀，避开 validate.ts 中 g6-frac- 前缀的运算题校验。
+ */
+
+/** 带符号运算结果 → MathExpr：整数 → text；其余 → 最简分数（负号在分子）；不产生带分数 */
+function sAnsExpr(n: number, d: number): MathExpr {
+  const [rn, rd] = reduce2(n, d);
+  if (rn % rd === 0) return text(String(rn / rd));
+  return frac(rn, rd);
+}
+
+/** 需要"两个不同分子"的同分母分支专用分母表：剔除 2（最简分子只有 1 个，抽不出两个） */
+const SIGNED_PAIR_DENOMS = [3, 4, 5, 6, 8];
+
+/** 带符号形态陷阱：可约分时出"未约分等价"（数值故意相等）。gcd 对负 N 失效（返回负），用绝对值判断 */
+function sFormTraps(traps: Trap[], N: number, D: number) {
+  if (gcd(Math.abs(N), Math.abs(D)) > 1)
+    traps.push({ value: frac(N, D), trap: '数值相等但没有约成最简，还要继续约分' });
+}
+
+/** 负分数比大小（三选一 vs 题）：负vs负 40%（同分子/同分母各半）/ 负分数vs负小数 25% / 正vs负 20% / 等值变形 15% */
+const genSignedFracCmp: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const sameT = text('一样大');
+  const r0 = rng();
+  if (r0 < 0.15) {
+    // 等值变形：-1/2 vs -0.5（小数转换是已训练的原子能力，这里考"负号不改变相等关系"）
+    const d = pick(rng, DECIMAL_OK);
+    const n = randomNumerator(rng, d);
+    const f = frac(-n, d);
+    const t = text(`-${fracToDecimalText(n, d)}`);
+    const traps: Trap[] = [
+      { value: f, trap: '两边其实相等：1/2 就是 0.5，负号不改变大小关系' },
+      { value: t, trap: '两边其实相等：1/2 就是 0.5，负号不改变大小关系' },
+    ];
+    return makeQuestion({ kind: 'vs', left: f, right: t }, '哪边更大？', sameT, traps);
+  }
+  if (r0 < 0.55) {
+    // 负 vs 负：同分子（分母大的反而小）/ 同分母（分子大的反而小）各半
+    let n1: number, n2: number, d1: number, d2: number;
+    if (rng() < 0.5) {
+      d1 = pick(rng, ARITH_DENOMS);
+      d2 = pick(rng, ARITH_DENOMS);
+      for (let t = 0; t < 60 && d2 === d1; t++) d2 = pick(rng, ARITH_DENOMS);
+      const lo = Math.min(d1, d2);
+      const cands = coprimeNumerators(lo).filter((n) => gcd(n, d1) === 1 && gcd(n, d2) === 1);
+      n1 = n2 = pick(rng, cands);
+    } else {
+      d1 = d2 = pick(rng, SIGNED_PAIR_DENOMS);
+      n1 = randomNumerator(rng, d1);
+      n2 = randomNumerator(rng, d1, n1);
+    }
+    const left = frac(-n1, d1);
+    const right = frac(-n2, d2);
+    const leftBigger = -n1 / d1 > -n2 / d2;
+    const bigger = leftBigger ? left : right;
+    const smaller = leftBigger ? right : left;
+    const traps: Trap[] = [
+      { value: smaller, trap: '负数比较：绝对值大的反而小' },
+      { value: sameT, trap: '两边不相等，再仔细比' },
+    ];
+    return makeQuestion({ kind: 'vs', left, right }, '哪边更大？', bigger, traps);
+  }
+  if (r0 < 0.8) {
+    // 负分数 vs 负小数：值接近但不同（差 0.05~0.2），必须先统一形态再比
+    const d = pick(rng, DECIMAL_OK);
+    const n = randomNumerator(rng, d);
+    const fMilli = n * (1000 / d);
+    const delta = pick(rng, [50, 100, 150, 200]);
+    const up = rng() < 0.5;
+    const gMilli = up ? Math.min(950, fMilli + delta) : Math.max(50, fMilli - delta);
+    const f = frac(-n, d);
+    const t = text(`-${fracToDecimalText(gMilli, 1000)}`);
+    const fracLeft = rng() < 0.5;
+    const left = fracLeft ? f : t;
+    const right = fracLeft ? t : f;
+    const fracBigger = -n / d > -gMilli / 1000;
+    const bigger = fracBigger ? f : t;
+    const smaller = fracBigger ? t : f;
+    const traps: Trap[] = [
+      { value: smaller, trap: '负数比较：绝对值大的反而小；先统一成分数或小数再比' },
+      { value: sameT, trap: '两边不相等，差了不到 0.2，仔细转换再比' },
+    ];
+    return makeQuestion({ kind: 'vs', left, right }, '哪边更大？', bigger, traps);
+  }
+  // 正 vs 负：正数永远更大（秒答题，建立符号直觉）
+  const d1 = pick(rng, ARITH_DENOMS);
+  const n1 = randomNumerator(rng, d1);
+  const d2 = pick(rng, ARITH_DENOMS);
+  const n2 = randomNumerator(rng, d2);
+  const posE = frac(n1, d1);
+  const negE = frac(-n2, d2);
+  const negLeft = rng() < 0.5;
+  const left = negLeft ? negE : posE;
+  const right = negLeft ? posE : negE;
+  const traps: Trap[] = [
+    { value: negE, trap: '正数永远比负数大' },
+    { value: sameT, trap: '一正一负不会相等' },
+  ];
+  return makeQuestion({ kind: 'vs', left, right }, '哪边更大？', posE, traps);
+};
+
+/** 分数符号快闪（三选一）：相反数得 0 12%；其余同分母带符号相加 / 异分母正数相减各半 */
+const genSignedFracFlash: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const pos = text('正数');
+  const neg = text('负数');
+  const zero = text('等于 0');
+  const hint = '先估绝对值：同分母比分子，异分母先通分再比；符号跟绝对值大的走';
+  const r0 = rng();
+  if (r0 < 0.12) {
+    // 互为相反数：n/d + (-n/d) = 0
+    const d = pick(rng, ARITH_DENOMS);
+    const n = randomNumerator(rng, d);
+    const first = rng() < 0.5;
+    const f1 = frac(n, d);
+    const f2 = frac(-n, d);
+    return makeQuestion(
+      { kind: 'op', op: '+', terms: first ? [f2, f1] : [f1, f2] },
+      '不计算，判断结果是正还是负',
+      zero,
+      [
+        { value: pos, trap: '这两个数互为相反数，相加等于 0' },
+        { value: neg, trap: '这两个数互为相反数，相加等于 0' },
+      ],
+    );
+  }
+  if (r0 < 0.56) {
+    // 同分母带符号相加：一正一负，判号 = 比分子大小（排除相等，不会恰为 0）
+    const d = pick(rng, SIGNED_PAIR_DENOMS);
+    const n1 = randomNumerator(rng, d);
+    const n2 = randomNumerator(rng, d, n1);
+    const negFirst = rng() < 0.5;
+    const terms = negFirst ? [frac(-n1, d), frac(n2, d)] : [frac(n1, d), frac(-n2, d)];
+    const v = negFirst ? n2 - n1 : n1 - n2;
+    const correct = v > 0 ? pos : neg;
+    const traps: Trap[] = [pos, neg, zero]
+      .filter((x) => exprKey(x) !== exprKey(correct))
+      .map((x) => ({
+        value: x,
+        trap: exprKey(x) === '等于 0' ? '两个分子不一样大，不会等于 0' : hint,
+      }));
+    return makeQuestion({ kind: 'op', op: '+', terms }, '不计算，判断结果是正还是负', correct, traps);
+  }
+  // 异分母正数相减：n1/d1 - n2/d2，要先通分才知道谁大（排除等值）
+  const p = pick(rng, [...MULTIPLE_PAIRS, ...COPRIME_PAIRS]);
+  const d1 = p[0];
+  const d2 = p[1];
+  const n1 = randomNumerator(rng, d1);
+  let n2 = randomNumerator(rng, d2);
+  for (let t = 0; t < 60 && n1 * d2 === n2 * d1; t++) n2 = randomNumerator(rng, d2);
+  const v = n1 * d2 - n2 * d1;
+  const correct = v > 0 ? pos : neg;
+  const traps: Trap[] = [pos, neg, zero]
+    .filter((x) => exprKey(x) !== exprKey(correct))
+    .map((x) => ({
+      value: x,
+      trap: exprKey(x) === '等于 0' ? '通分后分子不一样大，不会等于 0' : hint,
+    }));
+  return makeQuestion(
+    { kind: 'op', op: '-', terms: [frac(n1, d1), frac(n2, d2)] },
+    '不计算，判断结果是正还是负',
+    correct,
+    traps,
+  );
+};
+
+/** 分数正负加减·基础：同分母带符号 45% + 倍数分母 30% + 不够减（结果为负）25% */
+const genSignedFracBasic: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const r0 = rng();
+  if (r0 < 0.45) {
+    // 同分母带符号：通分零负担，专注符号规则
+    const d = pick(rng, SIGNED_PAIR_DENOMS);
+    const n1 = randomNumerator(rng, d);
+    const n2 = randomNumerator(rng, d, n1);
+    const s1 = rng() < 0.5 ? 1 : -1;
+    const s2 = rng() < 0.5 ? 1 : -1;
+    const isSub = rng() < 0.5;
+    const e2 = isSub ? -s2 : s2; // 第二项实际参与运算的符号
+    const N = s1 * n1 + e2 * n2;
+    const correctVal = N / d;
+    const traps: Trap[] = [];
+    pushTrap(traps, sAnsExpr(-N, d), '符号看反了', correctVal);
+    pushTrap(
+      traps,
+      sAnsExpr(s1 * n1 - e2 * n2, d),
+      isSub ? '减去一个数 = 加上它的相反数，符号要变' : '加负数 = 减正数，符号看错了',
+      correctVal,
+    );
+    pushTrap(traps, sAnsExpr(n1 + n2, d), '异号相加是绝对值抵消，不是相加', correctVal);
+    sFormTraps(traps, N, d);
+    fillTraps(traps, N, d);
+    return makeQuestion(
+      { kind: 'op', op: isSub ? '-' : '+', terms: [frac(s1 * n1, d), frac(s2 * n2, d)] },
+      '计算（注意正负号）',
+      sAnsExpr(N, d),
+      traps,
+    );
+  }
+  if (r0 < 0.75) {
+    // 倍数分母带符号：通分是小倍数，专注符号
+    const p = pick(rng, MULTIPLE_PAIRS);
+    const d1 = p[0];
+    const d2 = p[1];
+    const n1 = randomNumerator(rng, d1);
+    const n2 = randomNumerator(rng, d2);
+    const s1 = rng() < 0.5 ? 1 : -1;
+    const s2 = rng() < 0.5 ? 1 : -1;
+    const isSub = rng() < 0.5;
+    const e2 = isSub ? -s2 : s2;
+    const D = lcm(d1, d2);
+    const m1 = n1 * (D / d1);
+    const m2 = n2 * (D / d2);
+    const N = s1 * m1 + e2 * m2;
+    const correctVal = N / D;
+    const traps: Trap[] = [];
+    pushTrap(traps, sAnsExpr(-N, D), '符号看反了', correctVal);
+    pushTrap(
+      traps,
+      sAnsExpr(s1 * m1 - e2 * m2, D),
+      isSub ? '减去一个数 = 加上它的相反数，符号要变' : '加负数 = 减正数，符号看错了',
+      correctVal,
+    );
+    pushTrap(traps, sAnsExpr(s1 * n1 + e2 * n2, D), '通分后分子也要乘同样的倍数', correctVal);
+    sFormTraps(traps, N, D);
+    fillTraps(traps, N, D);
+    return makeQuestion(
+      { kind: 'op', op: isSub ? '-' : '+', terms: [frac(s1 * n1, d1), frac(s2 * n2, d2)] },
+      '计算（注意正负号）',
+      sAnsExpr(N, D),
+      traps,
+    );
+  }
+  // 不够减专项：正数 − 正数，结果为负（小学从未见过的结构，初中第一道坎）
+  const q = pickAddSubPair(rng);
+  const swap = q.n1 * q.d2 > q.n2 * q.d1;
+  const a1 = swap ? q.n2 : q.n1;
+  const b1 = swap ? q.d2 : q.d1;
+  const a2 = swap ? q.n1 : q.n2;
+  const b2 = swap ? q.d1 : q.d2;
+  const D = lcm(b1, b2);
+  const N = a1 * (D / b1) - a2 * (D / b2); // ≤ 0
+  const correctVal = N / D;
+  const traps: Trap[] = [];
+  pushTrap(traps, sAnsExpr(-N, D), '不够减时结果是负数：小数减大数，差的前面加负号，不是倒过来减', correctVal);
+  pushTrap(traps, sAnsExpr(a1 * (D / b1) + a2 * (D / b2), D), '把减法算成加法了', correctVal);
+  pushTrap(traps, sAnsExpr(N + 1, D), '分子减错了，再算一遍', correctVal);
+  sFormTraps(traps, N, D);
+  fillTraps(traps, N, D);
+  return makeQuestion(
+    { kind: 'op', op: '-', terms: [frac(a1, b1), frac(a2, b2)] },
+    '计算（注意正负号）',
+    sAnsExpr(N, D),
+    traps,
+  );
+};
+
+/** 分数正负混合·进阶：互质异号相加 40% + 减负数 30% + 小数分数混合 20% + 三项代数和 10% */
+const genSignedFracAdv: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const r0 = rng();
+  if (r0 < 0.4) {
+    // 互质分母严格异号相加：一正一负，考"抵消 + 符号跟绝对值大的走"
+    const p = pick(rng, COPRIME_PAIRS);
+    const d1 = p[0];
+    const d2 = p[1];
+    const n1 = randomNumerator(rng, d1);
+    const n2 = randomNumerator(rng, d2);
+    const negFirst = rng() < 0.5;
+    const D = lcm(d1, d2);
+    const m1 = n1 * (D / d1);
+    const m2 = n2 * (D / d2);
+    const N = negFirst ? -m1 + m2 : m1 - m2;
+    const correctVal = N / D;
+    const traps: Trap[] = [];
+    pushTrap(traps, sAnsExpr(m1 + m2, D), '异号相加是绝对值抵消，不是相加', correctVal);
+    pushTrap(traps, sAnsExpr(-m1 - m2, D), '异号相加是绝对值抵消，不是相加', correctVal);
+    pushTrap(traps, sAnsExpr(-N, D), '符号看反了：跟绝对值大的数走', correctVal);
+    sFormTraps(traps, N, D);
+    fillTraps(traps, N, D);
+    return makeQuestion(
+      { kind: 'op', op: '+', terms: [frac(negFirst ? -n1 : n1, d1), frac(negFirst ? n2 : -n2, d2)] },
+      '计算（注意正负号）',
+      sAnsExpr(N, D),
+      traps,
+    );
+  }
+  if (r0 < 0.7) {
+    // 减负数：正 − 负 = 相加、负 − 正 = 负的相加，各半
+    const p = pick(rng, [...MULTIPLE_PAIRS, ...COPRIME_PAIRS]);
+    const d1 = p[0];
+    const d2 = p[1];
+    const n1 = randomNumerator(rng, d1);
+    const n2 = randomNumerator(rng, d2);
+    const posMinusNeg = rng() < 0.5;
+    const D = lcm(d1, d2);
+    const m1 = n1 * (D / d1);
+    const m2 = n2 * (D / d2);
+    const N = posMinusNeg ? m1 + m2 : -m1 - m2;
+    const correctVal = N / D;
+    const traps: Trap[] = [];
+    pushTrap(traps, sAnsExpr(posMinusNeg ? m1 - m2 : -m1 + m2, D), '减负数 = 加正数，符号要变', correctVal);
+    pushTrap(traps, sAnsExpr(posMinusNeg ? -m1 + m2 : m1 - m2, D), '减负数 = 加正数，符号要变', correctVal);
+    pushTrap(traps, sAnsExpr(-N, D), '符号看反了', correctVal);
+    sFormTraps(traps, N, D);
+    fillTraps(traps, N, D);
+    const terms = posMinusNeg ? [frac(n1, d1), frac(-n2, d2)] : [frac(-n1, d1), frac(n2, d2)];
+    return makeQuestion({ kind: 'op', op: '-', terms }, '计算（注意正负号）', sAnsExpr(N, D), traps);
+  }
+  if (r0 < 0.9) {
+    // 小数分数混合带符号：小数来自 DEC_ANCHORS 加负号，分数带符号（转换是已训练的原子能力）
+    const [decS, dn, dd] = pick(rng, DEC_ANCHORS);
+    const d = pick(rng, ARITH_DENOMS);
+    const n = randomNumerator(rng, d);
+    const decNeg = rng() < 0.5;
+    const fracNeg = rng() < 0.5;
+    const isSub = rng() < 0.5;
+    const D = lcm(dd, d);
+    const sD = decNeg ? -1 : 1;
+    const eF = (fracNeg ? -1 : 1) * (isSub ? -1 : 1); // 分数项实际参与运算的符号
+    const N = sD * dn * (D / dd) + eF * n * (D / d);
+    const correctVal = N / D;
+    const traps: Trap[] = [];
+    pushTrap(traps, sAnsExpr(-N, D), '符号看反了', correctVal);
+    pushTrap(
+      traps,
+      sAnsExpr(sD * dn * (D / dd) - eF * n * (D / d), D),
+      isSub ? '减去一个数 = 加上它的相反数，符号要变' : '加负数 = 减正数，符号看错了',
+      correctVal,
+    );
+    pushTrap(traps, sAnsExpr(sD * dn * (D / dd) + eF * n, D), '通分后分子也要乘同样的倍数', correctVal);
+    sFormTraps(traps, N, D);
+    fillTraps(traps, N, D);
+    return makeQuestion(
+      { kind: 'op', op: isSub ? '-' : '+', terms: [text(decNeg ? `-${decS}` : decS), frac(fracNeg ? -n : n, d)] },
+      '计算（注意正负号）',
+      sAnsExpr(N, D),
+      traps,
+    );
+  }
+  // 三项代数和：分母组合 [2,3,4] [2,3,6] [3,4,6] [2,4,8]，公分母 ≤ 12
+  const ds = pick(rng, [[2, 3, 4], [2, 3, 6], [3, 4, 6], [2, 4, 8]]);
+  const n1 = randomNumerator(rng, ds[0]);
+  const n2 = randomNumerator(rng, ds[1]);
+  const n3 = randomNumerator(rng, ds[2]);
+  const s1 = rng() < 0.5 ? 1 : -1;
+  const s2 = rng() < 0.5 ? 1 : -1;
+  const s3 = rng() < 0.5 ? 1 : -1;
+  const D = lcm(lcm(ds[0], ds[1]), ds[2]);
+  const m1 = n1 * (D / ds[0]);
+  const m2 = n2 * (D / ds[1]);
+  const m3 = n3 * (D / ds[2]);
+  const N = s1 * m1 + s2 * m2 + s3 * m3;
+  const correctVal = N / D;
+  const traps: Trap[] = [];
+  pushTrap(traps, sAnsExpr(-N, D), '符号看反了', correctVal);
+  pushTrap(traps, sAnsExpr(s1 * m1 + s2 * m2 - s3 * m3, D), '最后一项的符号看错了', correctVal);
+  pushTrap(traps, sAnsExpr((m1 + m2 + m3) * (N >= 0 ? -1 : 1), D), '不能全当同号相加，负项要抵消', correctVal);
+  sFormTraps(traps, N, D);
+  fillTraps(traps, N, D);
+  return makeQuestion(
+    { kind: 'op', op: '+', terms: [frac(s1 * n1, ds[0]), frac(s2 * n2, ds[1]), frac(s3 * n3, ds[2])] },
+    '计算（注意正负号）',
+    sAnsExpr(N, D),
+    traps,
+  );
+};
+
+const signedFracCmpSkill: Skill = {
+  id: 'g6-signed-frac-cmp',
+  title: '负分数比大小',
+  intro: [
+    '考核点：含负分数的大小比较（教材 1.1 延伸，原子能力 B2 进阶）',
+    '核心直觉：负数比较，绝对值大的反而小（-1/2 < -1/3）',
+    '含负分数 vs 负小数（先统一形态再比）与等值变形（-1/2 和 -0.5 一样大）',
+    '本题型只有闯关和进阶两种模式',
+  ],
+  timeLimitSec: 5,
+  questionCount: 10,
+  supportsReview: false,
+  generators: [genSignedFracCmp],
+};
+
+const signedFracFlashSkill: Skill = {
+  id: 'g6-signed-frac-flash',
+  title: '分数符号快闪',
+  intro: [
+    '考核点：不计算，判断分数加减结果的正负（原子能力 C3 进阶）',
+    '先估绝对值：同分母比分子，异分母先通分再比；符号跟绝对值大的走',
+    '约一成题目互为相反数，结果等于 0',
+    '本题型只有闯关和进阶两种模式',
+  ],
+  timeLimitSec: 4,
+  questionCount: 10,
+  supportsReview: false,
+  generators: [genSignedFracFlash],
+};
+
+const signedFracBasicSkill: Skill = {
+  id: 'g6-signed-frac-basic',
+  title: '分数正负加减·基础',
+  intro: [
+    '考核点：带符号分数加减（同分母 45% + 倍数分母 30% + 不够减 25%）',
+    '先定符号再算绝对值；不够减时结果是负数（小数减大数，差的前面加负号）',
+    '答案要约到最简；复习模式键盘有负号键，负数答案先按 − 再输数字',
+  ],
+  timeLimitSec: 10,
+  questionCount: 10,
+  allowNegative: true,
+  acceptImproper: true,
+  hideMixedKey: true,
+  generators: [genSignedFracBasic],
+};
+
+const signedFracAdvSkill: Skill = {
+  id: 'g6-signed-frac-adv',
+  title: '分数正负混合·进阶',
+  intro: [
+    '考核点：互质分母异号相加 40% + 减负数 30% + 小数分数混合 20% + 三项代数和 10%',
+    '口诀：减去负数 = 加正数；异号相加，符号跟绝对值大的走',
+    '小数都来自常考锚点（0.5、0.25、0.125……），先转换再算',
+    '复习模式键盘有负号键，负数答案先按 − 再输数字',
+  ],
+  timeLimitSec: 14,
+  questionCount: 10,
+  allowNegative: true,
+  acceptImproper: true,
+  hideMixedKey: true,
+  generators: [genSignedFracAdv],
+};
+
 /* ---------------- 前置原子能力（五年级地基）：通分 / 交叉约分 / 倒数 ---------------- */
 
 /**
@@ -2540,8 +2979,8 @@ export const GRADES: Grade[] = [
     title: '六年级上 · 第1章 有理数',
     available: true,
     units: [
-      { id: 'g6-1-1', title: '1.1 有理数的引入', skills: [oppositeAbsSkill, signCompareSkill] },
-      { id: 'g6-1-2', title: '1.2 有理数的加法与减法', skills: [signFlashSkill, signedAddSkill] },
+      { id: 'g6-1-1', title: '1.1 有理数的引入', skills: [oppositeAbsSkill, signCompareSkill, signedFracCmpSkill] },
+      { id: 'g6-1-2', title: '1.2 有理数的加法与减法', skills: [signFlashSkill, signedFracFlashSkill, signedAddSkill, signedFracBasicSkill, signedFracAdvSkill] },
       { id: 'g6-1-3', title: '1.3 有理数的乘法与除法', skills: [signFlashMulSkill, signedMulSkill] },
       { id: 'g6-1-4', title: '1.4 有理数的乘方', skills: [powerFlashSkill] },
       { id: 'g6-1-5', title: '1.5 有理数的混合运算', skills: [opOrderSkill, opLawsSkill] },

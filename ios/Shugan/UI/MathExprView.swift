@@ -30,6 +30,17 @@ struct MathExprView: View {
                     .foregroundColor(neg ? .red600 : color)
             )
         case .frac(let n, let d):
+            // 负分数（负号在分子里，如 frac('-1','2')）：负号前置到分数线左边并标红
+            if n.hasPrefix("-") {
+                return AnyView(
+                    HStack(alignment: .center, spacing: fontSize * 0.08) {
+                        Text("−")
+                            .font(.system(size: fontSize, weight: .bold))
+                            .foregroundColor(.red600)
+                        FracView(n: String(n.dropFirst()), d: d, fontSize: fontSize)
+                    }
+                )
+            }
             return AnyView(FracView(n: n, d: d, fontSize: fontSize))
         case .mixed(let w, let n, let d):
             return AnyView(
@@ -60,8 +71,8 @@ struct MathExprView: View {
                                     .font(.system(size: fontSize, weight: .black))
                                     .foregroundColor(.indigo400)
                             }
-                            // 负数项加括号：(-3) + (-5)
-                            if case .text(let txt) = t, txt.hasPrefix("-") {
+                            // 负数项加括号：(-3) + (-5)、(-1/2) + 1/3
+                            if isNegativeTerm(t) {
                                 HStack(alignment: .center, spacing: 0) {
                                     Text("(")
                                         .font(.system(size: fontSize, weight: .black))
@@ -79,6 +90,15 @@ struct MathExprView: View {
                 }
             )
         }
+    }
+}
+
+/** 运算式中的负数项判定：text 或负分子 frac（ViewBuilder 内不能写多语句 if，抽成函数） */
+private func isNegativeTerm(_ t: MathExpr) -> Bool {
+    switch t {
+    case .text(let txt): return txt.hasPrefix("-")
+    case .frac(let fn, _): return fn.hasPrefix("-")
+    default: return false
     }
 }
 

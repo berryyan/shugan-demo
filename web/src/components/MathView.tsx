@@ -21,6 +21,15 @@ export default function MathView({
     );
   }
   if (expr.kind === 'frac') {
+    // 负分数（负号在分子里，如 frac('-1','2')）：负号前置到分数线左边并标红
+    if (expr.n.startsWith('-')) {
+      return (
+        <span className={`inline-flex items-center gap-[0.08em] ${className}`}>
+          <span className="text-red-600 font-bold">−</span>
+          <Frac n={expr.n.slice(1)} d={expr.d} />
+        </span>
+      );
+    }
     return <Frac n={expr.n} d={expr.d} className={className} />;
   }
   if (expr.kind === 'vs') {
@@ -36,8 +45,10 @@ export default function MathView({
     return (
       <span className={`inline-flex items-center gap-[0.3em] ${className}`}>
         {expr.terms.map((t, i) => {
-          // 负数项加括号：(-3) + (-5) 的有理数标准写法
-          const neg = t.kind === 'text' && t.text.startsWith('-');
+          // 负数项加括号：(-3) + (-5)、(-1/2) + 1/3 的有理数标准写法
+          const neg =
+            (t.kind === 'text' && t.text.startsWith('-')) ||
+            (t.kind === 'frac' && t.n.startsWith('-'));
           return (
             <span key={i} className="inline-flex items-center gap-[0.3em]">
               {i > 0 && <span className="text-indigo-400 font-black">{expr.op === '-' ? '−' : expr.op}</span>}

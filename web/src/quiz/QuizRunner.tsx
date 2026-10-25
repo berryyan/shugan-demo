@@ -146,9 +146,17 @@ export default function QuizRunner() {
     ? modeParams(skill, mode)
     : { count: 0, timeLimitSec: 10 };
 
+  // 复习模式：技能若配了专属生成器（reviewGenerators）则换用——"下面哪个是"这类答案不唯一的题不适合填空
   const questions: Question[] = useMemo(
-    () => (skill ? generateQuiz(skill, Date.now(), count) : []),
-    [skill, count],
+    () =>
+      skill
+        ? generateQuiz(
+            reviewMode && skill.reviewGenerators ? { ...skill, generators: skill.reviewGenerators } : skill,
+            Date.now(),
+            count,
+          )
+        : [],
+    [skill, count, reviewMode],
   );
 
   const [index, setIndex] = useState(0);
@@ -314,7 +322,9 @@ export default function QuizRunner() {
       }
       settle(correct.id, attempts);
     } else {
-      wrongSubmit('不对，再算一遍');
+      // 输入值若命中某个已知误区（与某干扰项等值），直接讲那个误区；否则给通用提示
+      const hit = q.choices.find((c) => !c.correct && Math.abs(exprValue(c.value) - parsed.value) < 1e-9);
+      wrongSubmit(hit?.trap ?? '不对，再算一遍');
     }
   };
 

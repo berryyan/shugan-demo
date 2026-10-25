@@ -97,7 +97,10 @@ struct QuizRunnerView: View {
     /* ---------------- 生命周期 ---------------- */
 
     private func startRun() {
-        questions = generateQuiz(skill, count: params.count)
+        // 复习模式：技能若配了专属生成器（reviewGenerators）则换用——"下面哪个是"这类答案不唯一的题不适合填空
+        var effective = skill
+        if reviewMode, let rg = skill.reviewGenerators { effective.generators = rg }
+        questions = generateQuiz(effective, count: params.count)
         index = 0
         phase = .answering
         streak = 0
@@ -251,7 +254,9 @@ struct QuizRunnerView: View {
             }
             settle(correct.id, attempts)
         } else {
-            wrongSubmit("不对，再算一遍")
+            // 输入值若命中某个已知误区（与某干扰项等值），直接讲那个误区；否则给通用提示
+            let hit = q.choices.first { !$0.correct && abs(exprValue($0.value) - parsed.value) < 1e-9 }
+            wrongSubmit(hit?.trap ?? "不对，再算一遍")
         }
     }
 

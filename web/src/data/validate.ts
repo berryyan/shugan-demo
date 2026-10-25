@@ -8,9 +8,11 @@ import { findSkill, generateQuiz } from '@/data/bank';
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
 const lcm = (a: number, b: number): number => (a / gcd(a, b)) * b;
 
-export function validateSkill(skillId: string, seeds = 500) {
-  const skill = findSkill(skillId);
-  if (!skill) return { error: 'skill not found' };
+export function validateSkill(skillId: string, seeds = 500, useReview = false) {
+  const found = findSkill(skillId);
+  if (!found) return { error: 'skill not found' };
+  // useReview：改用复习模式专属生成器校验（与 QuizRunner 复习模式的换用逻辑一致）
+  const skill = useReview && found.reviewGenerators ? { ...found, generators: found.reviewGenerators } : found;
   const bad: string[] = [];
   let total = 0;
   let reducible = 0;
@@ -294,6 +296,8 @@ export function validateAll() {
     opLaws: validateSkill('g6-op-laws'),
     factorSense: validateSkill('g5-ns-factor'),
     divisSense: validateSkill('g5-ns-divis'),
+    factorSenseReview: validateSkill('g5-ns-factor', 500, true),
+    divisSenseReview: validateSkill('g5-ns-divis', 500, true),
     primeSense: validateSkill('g5-ns-prime'),
     gcdSense: validateSkill('g5-ns-gcd'),
     lcmSense: validateSkill('g5-ns-lcm'),

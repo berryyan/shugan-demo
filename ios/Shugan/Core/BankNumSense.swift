@@ -167,6 +167,51 @@ func genFactorSense(_ rng: Mulberry32) -> Question {
     return makeQuestion(rng: rng, prompt: text("\(N) = \(a) ×（ ）"), requirement: "括号里填几？", correct: text(b), traps: traps)
 }
 
+/** 因数枚举·复习版（答案唯一，2026-10-25 新增）：因数个数 40% + 因数配对 30% + 最大真因数 30%
+ *  原选择版"下面哪个是/不是"答案不唯一，填空模式会把合法答案误判，复习模式改用本生成器。
+ *  与 bank.ts 的 genFactorSenseReview 逐行对应。 */
+func genFactorSenseReview(_ rng: Mulberry32) -> Question {
+    let kind = rng.next()
+    if kind < 0.4 {
+        // 因数个数：只出因数总数 5~9 的数（与原选择版同规则）
+        var N = pick(rng, FACTOR_HOSTS)
+        var tries = 0
+        while tries < 50 && factorsOf(N).count > 9 {
+            N = pick(rng, FACTOR_HOSTS)
+            tries += 1
+        }
+        let tau = factorsOf(N).count
+        var traps: [Trap] = []
+        pushTextTrap(&traps, (tau - 2) * 10, "漏数了 1 和它自己", tau * 10)
+        pushTextTrap(&traps, (tau - 1) * 10, "漏了一对——因数都是成对出现的", tau * 10)
+        pushTextTrap(&traps, (tau + 1) * 10, "多数了一个，再核对一遍", tau * 10)
+        return makeQuestion(rng: rng, prompt: text("\(N)"), requirement: "它的因数有几个？", correct: text(tau), traps: traps)
+    }
+    let N = pick(rng, FACTOR_HOSTS)
+    let nontrivial = factorsOf(N).filter { $0 > 1 && $0 < N }
+    if kind < 0.7 {
+        // 因数配对：N = a ×（ ）
+        let a = pick(rng, nontrivial)
+        let b = N / a
+        var traps: [Trap] = []
+        for t in [b + 1, b - 1, b + 2, b - 2, b + 3] {
+            if traps.count >= 3 { break }
+            if t <= 0 || t == b { continue }
+            traps.append((value: text("\(t)"), trap: "\(a) × \(t) = \(a * t)，不是 \(N)"))
+        }
+        return makeQuestion(rng: rng, prompt: text("\(N) = \(a) ×（ ）"), requirement: "括号里填几？", correct: text(b), traps: traps)
+    }
+    // 最大真因数：N ÷ 最小质因数（真因数不含它自己，答案唯一）
+    let spf = smallestPrimeFactor(N)
+    let ans = N / spf
+    var traps: [Trap] = []
+    pushTextTrap(&traps, N * 10, "真因数不包括它自己", ans * 10)
+    pushTextTrap(&traps, spf * 10, "那是大于 1 的最小因数，题目问最大的", ans * 10)
+    pushTextTrap(&traps, (ans - 1) * 10, "\(ans - 1) 不能整除 \(N)", ans * 10)
+    fillTextTraps(&traps, ans * 10)
+    return makeQuestion(rng: rng, prompt: text("\(N)"), requirement: "它的最大真因数是？（真因数不含它自己）", correct: text(ans), traps: traps)
+}
+
 /** 整除特征（数感地基 2/5）：3/9 数字和 55%、2/5 个位 20%、6/10 双条件 15%、4/25 末两位 10% */
 func genDivisSense(_ rng: Mulberry32) -> Question {
     let kind = rng.next()
@@ -286,6 +331,107 @@ func genDivisSense(_ rng: Mulberry32) -> Question {
         traps.append((value: text("\(prefix * 100 + w)"), trap: "末两位 \(pad2(w)) 不行——被 25 整除末两位只能是 00、25、50、75"))
     }
     return makeQuestion(rng: rng, prompt: text("下面哪个数能被 25 整除？"), requirement: "整除判断（看末两位）", correct: text(N), traps: traps)
+}
+
+/** 整除特征·复习版（答案唯一的填空型，2026-10-25 新增）：规则覆盖与选择版对齐（3/9 数字和 55%、
+ *  2/5 个位 20%、6/10 双条件 15%、4/25 末两位 10%），问法改为"□ 里最大/最小填几"保证答案唯一。
+ *  与 bank.ts 的 genDivisSenseReview 逐行对应。 */
+func genDivisSenseReview(_ rng: Mulberry32) -> Question {
+    let kind = rng.next()
+    if kind < 0.55 {
+        // 数字和规则：3（30%）或 9（25%），形式 AB□ / ABC□，问 □ 最大/最小填几
+        let m = kind < 0.3 ? 3 : 9
+        let len = rng.next() < 0.5 ? 3 : 4
+        var prefix = 1 + Int(rng.next() * 9)
+        for _ in 0..<(len - 2) { prefix = prefix * 10 + Int(rng.next() * 10) }
+        var S = 0
+        for ch in String(prefix) { S += Int(String(ch))! }
+        let rc = (m - (S % m)) % m // □ 需要满足的 mod m 余数
+        var okDigits: [Int] = []
+        for d in 0...9 where d % m == rc { okDigits.append(d) }
+        let askMax = rng.next() < 0.5
+        let ans = askMax ? okDigits[okDigits.count - 1] : okDigits[0]
+        let other = askMax ? okDigits[0] : okDigits[okDigits.count - 1]
+        var traps: [Trap] = []
+        pushTextTrap(&traps, other * 10, "能被 \(m) 整除，但不是\(askMax ? "最大" : "最小")的", ans * 10)
+        if ans + 1 <= 9 { pushTextTrap(&traps, (ans + 1) * 10, "数字和变成 \(S + ans + 1)，不能被 \(m) 整除", ans * 10) }
+        if ans > 0 { pushTextTrap(&traps, (ans - 1) * 10, "数字和变成 \(S + ans - 1)，不能被 \(m) 整除", ans * 10) }
+        fillTextTraps(&traps, ans * 10)
+        return makeQuestion(rng: rng, prompt: text("\(prefix)□ 能被 \(m) 整除"), requirement: "□ 里\(askMax ? "最大" : "最小")填几？", correct: text(ans), traps: traps)
+    }
+    if kind < 0.75 {
+        // 个位规则：2 或 5，形式 XX□，问 □ 最大/最小填几
+        let m = rng.next() < 0.5 ? 2 : 5
+        let prefix = 10 + Int(rng.next() * 989) // 10~998
+        let valid = m == 2 ? [0, 2, 4, 6, 8] : [0, 5]
+        let askMax = rng.next() < 0.5
+        let ans = askMax ? valid[valid.count - 1] : valid[0]
+        let other = askMax ? valid[valid.count - 2] : valid[1]
+        var traps: [Trap] = []
+        pushTextTrap(&traps, other * 10, "能被 \(m) 整除，但不是\(askMax ? "最大" : "最小")的", ans * 10)
+        if ans + 1 <= 9 { pushTextTrap(&traps, (ans + 1) * 10, "个位是 \(ans + 1)，不能被 \(m) 整除", ans * 10) }
+        if ans + 2 <= 9 { pushTextTrap(&traps, (ans + 2) * 10, "个位是 \(ans + 2)，不能被 \(m) 整除", ans * 10) }
+        fillTextTraps(&traps, ans * 10)
+        return makeQuestion(rng: rng, prompt: text("\(prefix)□ 能被 \(m) 整除"), requirement: "□ 里\(askMax ? "最大" : "最小")填几？", correct: text(ans), traps: traps)
+    }
+    if kind < 0.9 {
+        // 双条件：10（个位必须 0，唯一答案）或 6（□ 在中间，偶数条件已由末位保证）
+        if rng.next() < 0.5 {
+            let prefix = 10 + Int(rng.next() * 989)
+            let traps: [Trap] = [
+                (value: text("5"), trap: "个位是 5 只能被 5 整除，10 的倍数个位必须是 0"),
+                (value: text("1"), trap: "10 的倍数个位必须是 0"),
+                (value: text("2"), trap: "10 的倍数个位必须是 0"),
+            ]
+            return makeQuestion(rng: rng, prompt: text("\(prefix)□ 能被 10 整除"), requirement: "□ 里填几？", correct: text("0"), traps: traps)
+        }
+        // 6：形式 A□B（B 偶），数字和能被 3 整除即可，问最大/最小
+        let a = 1 + Int(rng.next() * 9)
+        let b = pick(rng, [0, 2, 4, 6, 8])
+        let rc = (3 - ((a + b) % 3)) % 3
+        var okDigits: [Int] = []
+        for d in 0...9 where d % 3 == rc { okDigits.append(d) }
+        let askMax = rng.next() < 0.5
+        let ans = askMax ? okDigits[okDigits.count - 1] : okDigits[0]
+        let other = askMax ? okDigits[0] : okDigits[okDigits.count - 1]
+        var traps: [Trap] = []
+        pushTextTrap(&traps, other * 10, "能被 6 整除，但不是\(askMax ? "最大" : "最小")的", ans * 10)
+        if ans + 1 <= 9 { pushTextTrap(&traps, (ans + 1) * 10, "数字和变成 \(a + b + ans + 1)，不能被 3 整除", ans * 10) }
+        if ans > 0 { pushTextTrap(&traps, (ans - 1) * 10, "数字和变成 \(a + b + ans - 1)，不能被 3 整除", ans * 10) }
+        fillTextTraps(&traps, ans * 10)
+        return makeQuestion(rng: rng, prompt: text("\(a)□\(b) 能被 6 整除"), requirement: "□ 里\(askMax ? "最大" : "最小")填几？", correct: text(ans), traps: traps)
+    }
+    // 末两位规则：4 或 25，问 □ 最大/最小填几
+    if rng.next() < 0.5 {
+        // 4：形式 A□B（B 偶），末两位 □B 被 4 整除
+        let a = 1 + Int(rng.next() * 9)
+        let b = pick(rng, [0, 2, 4, 6, 8])
+        var okDigits: [Int] = []
+        for d in 0...9 where (d * 10 + b) % 4 == 0 { okDigits.append(d) }
+        let askMax = rng.next() < 0.5
+        let ans = askMax ? okDigits[okDigits.count - 1] : okDigits[0]
+        let other = askMax ? okDigits[0] : okDigits[okDigits.count - 1]
+        var traps: [Trap] = []
+        pushTextTrap(&traps, other * 10, "能被 4 整除，但不是\(askMax ? "最大" : "最小")的", ans * 10)
+        if ans + 1 <= 9 { pushTextTrap(&traps, (ans + 1) * 10, "末两位 \(ans + 1)\(b) 除以 4 有余数", ans * 10) }
+        if ans > 0 { pushTextTrap(&traps, (ans - 1) * 10, "末两位 \(ans - 1)\(b) 除以 4 有余数", ans * 10) }
+        fillTextTraps(&traps, ans * 10)
+        return makeQuestion(rng: rng, prompt: text("\(a)□\(b) 能被 4 整除"), requirement: "□ 里\(askMax ? "最大" : "最小")填几？", correct: text(ans), traps: traps)
+    }
+    // 25：形式 A□S（S ∈ {0,5}），末两位必须是 00/25/50/75
+    let a = 1 + Int(rng.next() * 9)
+    let suffix = pick(rng, [0, 5])
+    var okDigits: [Int] = []
+    for d in 0...9 where [0, 25, 50, 75].contains(d * 10 + suffix) { okDigits.append(d) }
+    let askMax = rng.next() < 0.5
+    let ans = askMax ? okDigits[okDigits.count - 1] : okDigits[0]
+    let other = askMax ? okDigits[0] : okDigits[okDigits.count - 1]
+    var traps: [Trap] = []
+    pushTextTrap(&traps, other * 10, "能被 25 整除，但不是\(askMax ? "最大" : "最小")的", ans * 10)
+    if ans + 1 <= 9 { pushTextTrap(&traps, (ans + 1) * 10, "末两位 \(ans + 1)\(suffix) 不行——被 25 整除末两位只能是 00、25、50、75", ans * 10) }
+    if ans > 0 { pushTextTrap(&traps, (ans - 1) * 10, "末两位 \(ans - 1)\(suffix) 不行——被 25 整除末两位只能是 00、25、50、75", ans * 10) }
+    fillTextTraps(&traps, ans * 10)
+    return makeQuestion(rng: rng, prompt: text("\(a)□\(suffix) 能被 25 整除"), requirement: "□ 里\(askMax ? "最大" : "最小")填几？", correct: text(ans), traps: traps)
 }
 
 /** 100 以内质数 */
@@ -499,7 +645,8 @@ let factorSenseSkill = Skill(
     timeLimitSec: 6,
     questionCount: 10,
     numericKeypad: true,
-    generators: [genFactorSense]
+    generators: [genFactorSense],
+    reviewGenerators: [genFactorSenseReview]
 )
 
 let divisSenseSkill = Skill(
@@ -514,7 +661,8 @@ let divisSenseSkill = Skill(
     timeLimitSec: 5,
     questionCount: 10,
     numericKeypad: true,
-    generators: [genDivisSense]
+    generators: [genDivisSense],
+    reviewGenerators: [genDivisSenseReview]
 )
 
 let primeSenseSkill = Skill(

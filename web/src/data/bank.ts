@@ -2563,6 +2563,47 @@ const genFactorSense: QuestionGenerator = (rng) => {
   return makeQuestion(text(`${N} = ${a} ×（ ）`), '括号里填几？', text(String(b)), traps);
 };
 
+/** 因数枚举·复习版（答案唯一，2026-10-25 新增）：因数个数 40% + 因数配对 30% + 最大真因数 30%
+ *  原选择版"下面哪个是/不是"答案不唯一，填空模式会把合法答案误判，复习模式改用本生成器 */
+const genFactorSenseReview: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.4) {
+    // 因数个数：只出因数总数 5~9 的数（与原选择版同规则）
+    let N = pick(rng, FACTOR_HOSTS);
+    for (let tries = 0; tries < 50 && factorsOf(N).length > 9; tries++) N = pick(rng, FACTOR_HOSTS);
+    const tau = factorsOf(N).length;
+    const traps: Trap[] = [];
+    pushTextTrap(traps, (tau - 2) * 10, '漏数了 1 和它自己', tau * 10);
+    pushTextTrap(traps, (tau - 1) * 10, '漏了一对——因数都是成对出现的', tau * 10);
+    pushTextTrap(traps, (tau + 1) * 10, '多数了一个，再核对一遍', tau * 10);
+    return makeQuestion(text(String(N)), '它的因数有几个？', text(String(tau)), traps);
+  }
+  const N = pick(rng, FACTOR_HOSTS);
+  const nontrivial = factorsOf(N).filter((f) => f > 1 && f < N);
+  if (kind < 0.7) {
+    // 因数配对：N = a ×（ ）
+    const a = pick(rng, nontrivial);
+    const b = N / a;
+    const traps: Trap[] = [];
+    for (const t of [b + 1, b - 1, b + 2, b - 2, b + 3]) {
+      if (traps.length >= 3) break;
+      if (t <= 0 || t === b) continue;
+      traps.push({ value: text(String(t)), trap: `${a} × ${t} = ${a * t}，不是 ${N}` });
+    }
+    return makeQuestion(text(`${N} = ${a} ×（ ）`), '括号里填几？', text(String(b)), traps);
+  }
+  // 最大真因数：N ÷ 最小质因数（真因数不含 1 以外的它自己，答案唯一）
+  const spf = smallestPrimeFactor(N);
+  const ans = N / spf;
+  const traps: Trap[] = [];
+  pushTextTrap(traps, N * 10, '真因数不包括它自己', ans * 10);
+  pushTextTrap(traps, spf * 10, '那是大于 1 的最小因数，题目问最大的', ans * 10);
+  pushTextTrap(traps, (ans - 1) * 10, `${ans - 1} 不能整除 ${N}`, ans * 10);
+  fillTextTraps(traps, ans * 10);
+  return makeQuestion(text(String(N)), '它的最大真因数是？（真因数不含它自己）', text(String(ans)), traps);
+};
+
 /** 整除特征（数感地基 2/5）：3/9 数字和 55%、2/5 个位 20%、6/10 双条件 15%、4/25 末两位 10% */
 const genDivisSense: QuestionGenerator = (rng) => {
   rngGlobal = rng;
@@ -2681,6 +2722,107 @@ const genDivisSense: QuestionGenerator = (rng) => {
     traps.push({ value: text(String(prefix * 100 + w)), trap: `末两位 ${pad2(w)} 不行——被 25 整除末两位只能是 00、25、50、75` });
   }
   return makeQuestion(text('下面哪个数能被 25 整除？'), '整除判断（看末两位）', text(String(N)), traps);
+};
+
+/** 整除特征·复习版（答案唯一的填空型，2026-10-25 新增）：规则覆盖与选择版对齐（3/9 数字和 55%、
+ *  2/5 个位 20%、6/10 双条件 15%、4/25 末两位 10%），问法改为"□ 里最大/最小填几"保证答案唯一 */
+const genDivisSenseReview: QuestionGenerator = (rng) => {
+  rngGlobal = rng;
+  const kind = rng();
+  if (kind < 0.55) {
+    // 数字和规则：3（30%）或 9（25%），形式 AB□ / ABC□，问 □ 最大/最小填几
+    const m = kind < 0.3 ? 3 : 9;
+    const len = rng() < 0.5 ? 3 : 4;
+    let prefix = 1 + Math.floor(rng() * 9);
+    for (let i = 0; i < len - 2; i++) prefix = prefix * 10 + Math.floor(rng() * 10);
+    let S = 0;
+    for (const ch of String(prefix)) S += Number(ch);
+    const rc = (m - (S % m)) % m; // □ 需要满足的 mod m 余数
+    const okDigits: number[] = [];
+    for (let d = 0; d <= 9; d++) if (d % m === rc) okDigits.push(d);
+    const askMax = rng() < 0.5;
+    const ans = askMax ? okDigits[okDigits.length - 1] : okDigits[0];
+    const other = askMax ? okDigits[0] : okDigits[okDigits.length - 1];
+    const traps: Trap[] = [];
+    pushTextTrap(traps, other * 10, `能被 ${m} 整除，但不是${askMax ? '最大' : '最小'}的`, ans * 10);
+    if (ans + 1 <= 9) pushTextTrap(traps, (ans + 1) * 10, `数字和变成 ${S + ans + 1}，不能被 ${m} 整除`, ans * 10);
+    if (ans > 0) pushTextTrap(traps, (ans - 1) * 10, `数字和变成 ${S + ans - 1}，不能被 ${m} 整除`, ans * 10);
+    fillTextTraps(traps, ans * 10);
+    return makeQuestion(text(`${prefix}□ 能被 ${m} 整除`), `□ 里${askMax ? '最大' : '最小'}填几？`, text(String(ans)), traps);
+  }
+  if (kind < 0.75) {
+    // 个位规则：2 或 5，形式 XX□，问 □ 最大/最小填几
+    const m = rng() < 0.5 ? 2 : 5;
+    const prefix = 10 + Math.floor(rng() * 989); // 10~998
+    const valid = m === 2 ? [0, 2, 4, 6, 8] : [0, 5];
+    const askMax = rng() < 0.5;
+    const ans = askMax ? valid[valid.length - 1] : valid[0];
+    const other = askMax ? valid[valid.length - 2] : valid[1];
+    const traps: Trap[] = [];
+    pushTextTrap(traps, other * 10, `能被 ${m} 整除，但不是${askMax ? '最大' : '最小'}的`, ans * 10);
+    if (ans + 1 <= 9) pushTextTrap(traps, (ans + 1) * 10, `个位是 ${ans + 1}，不能被 ${m} 整除`, ans * 10);
+    if (ans + 2 <= 9) pushTextTrap(traps, (ans + 2) * 10, `个位是 ${ans + 2}，不能被 ${m} 整除`, ans * 10);
+    fillTextTraps(traps, ans * 10);
+    return makeQuestion(text(`${prefix}□ 能被 ${m} 整除`), `□ 里${askMax ? '最大' : '最小'}填几？`, text(String(ans)), traps);
+  }
+  if (kind < 0.9) {
+    // 双条件：10（个位必须 0，唯一答案）或 6（□ 在中间，偶数条件已由末位保证）
+    if (rng() < 0.5) {
+      const prefix = 10 + Math.floor(rng() * 989);
+      const traps: Trap[] = [
+        { value: text('5'), trap: '个位是 5 只能被 5 整除，10 的倍数个位必须是 0' },
+        { value: text('1'), trap: '10 的倍数个位必须是 0' },
+        { value: text('2'), trap: '10 的倍数个位必须是 0' },
+      ];
+      return makeQuestion(text(`${prefix}□ 能被 10 整除`), '□ 里填几？', text('0'), traps);
+    }
+    // 6：形式 A□B（B 偶），数字和能被 3 整除即可，问最大/最小
+    const a = 1 + Math.floor(rng() * 9);
+    const b = pick(rng, [0, 2, 4, 6, 8]);
+    const rc = (3 - ((a + b) % 3)) % 3;
+    const okDigits: number[] = [];
+    for (let d = 0; d <= 9; d++) if (d % 3 === rc) okDigits.push(d);
+    const askMax = rng() < 0.5;
+    const ans = askMax ? okDigits[okDigits.length - 1] : okDigits[0];
+    const other = askMax ? okDigits[0] : okDigits[okDigits.length - 1];
+    const traps: Trap[] = [];
+    pushTextTrap(traps, other * 10, `能被 6 整除，但不是${askMax ? '最大' : '最小'}的`, ans * 10);
+    if (ans + 1 <= 9) pushTextTrap(traps, (ans + 1) * 10, `数字和变成 ${a + b + ans + 1}，不能被 3 整除`, ans * 10);
+    if (ans > 0) pushTextTrap(traps, (ans - 1) * 10, `数字和变成 ${a + b + ans - 1}，不能被 3 整除`, ans * 10);
+    fillTextTraps(traps, ans * 10);
+    return makeQuestion(text(`${a}□${b} 能被 6 整除`), `□ 里${askMax ? '最大' : '最小'}填几？`, text(String(ans)), traps);
+  }
+  // 末两位规则：4 或 25，问 □ 最大/最小填几
+  if (rng() < 0.5) {
+    // 4：形式 A□B（B 偶），末两位 □B 被 4 整除
+    const a = 1 + Math.floor(rng() * 9);
+    const b = pick(rng, [0, 2, 4, 6, 8]);
+    const okDigits: number[] = [];
+    for (let d = 0; d <= 9; d++) if ((d * 10 + b) % 4 === 0) okDigits.push(d);
+    const askMax = rng() < 0.5;
+    const ans = askMax ? okDigits[okDigits.length - 1] : okDigits[0];
+    const other = askMax ? okDigits[0] : okDigits[okDigits.length - 1];
+    const traps: Trap[] = [];
+    pushTextTrap(traps, other * 10, `能被 4 整除，但不是${askMax ? '最大' : '最小'}的`, ans * 10);
+    if (ans + 1 <= 9) pushTextTrap(traps, (ans + 1) * 10, `末两位 ${ans + 1}${b} 除以 4 有余数`, ans * 10);
+    if (ans > 0) pushTextTrap(traps, (ans - 1) * 10, `末两位 ${ans - 1}${b} 除以 4 有余数`, ans * 10);
+    fillTextTraps(traps, ans * 10);
+    return makeQuestion(text(`${a}□${b} 能被 4 整除`), `□ 里${askMax ? '最大' : '最小'}填几？`, text(String(ans)), traps);
+  }
+  // 25：形式 A□S（S ∈ {0,5}），末两位必须是 00/25/50/75
+  const a = 1 + Math.floor(rng() * 9);
+  const suffix = pick(rng, [0, 5]);
+  const okDigits: number[] = [];
+  for (let d = 0; d <= 9; d++) if ([0, 25, 50, 75].includes(d * 10 + suffix)) okDigits.push(d);
+  const askMax = rng() < 0.5;
+  const ans = askMax ? okDigits[okDigits.length - 1] : okDigits[0];
+  const other = askMax ? okDigits[0] : okDigits[okDigits.length - 1];
+  const traps: Trap[] = [];
+  pushTextTrap(traps, other * 10, `能被 25 整除，但不是${askMax ? '最大' : '最小'}的`, ans * 10);
+  if (ans + 1 <= 9) pushTextTrap(traps, (ans + 1) * 10, `末两位 ${ans + 1}${suffix} 不行——被 25 整除末两位只能是 00、25、50、75`, ans * 10);
+  if (ans > 0) pushTextTrap(traps, (ans - 1) * 10, `末两位 ${ans - 1}${suffix} 不行——被 25 整除末两位只能是 00、25、50、75`, ans * 10);
+  fillTextTraps(traps, ans * 10);
+  return makeQuestion(text(`${a}□${suffix} 能被 25 整除`), `□ 里${askMax ? '最大' : '最小'}填几？`, text(String(ans)), traps);
 };
 
 /** 100 以内质数 */
@@ -2893,6 +3035,7 @@ const factorSenseSkill: Skill = {
   questionCount: 10,
   numericKeypad: true,
   generators: [genFactorSense],
+  reviewGenerators: [genFactorSenseReview],
 };
 
 const divisSenseSkill: Skill = {
@@ -2908,6 +3051,7 @@ const divisSenseSkill: Skill = {
   questionCount: 10,
   numericKeypad: true,
   generators: [genDivisSense],
+  reviewGenerators: [genDivisSenseReview],
 };
 
 const primeSenseSkill: Skill = {

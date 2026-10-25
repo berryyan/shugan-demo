@@ -117,7 +117,9 @@ struct Skill {
     var allowUnreduced = false  // true 时复习模式接受未约分的正确答案
     var numericKeypad = false   // true 时复习模式键盘裁掉分数线/带分数键
     var hideMixedKey = false    // true 时复习模式键盘裁掉带分数空格键
-    let generators: [QuestionGenerator]
+    var generators: [QuestionGenerator]
+    /** 复习模式专属生成器：设置后复习模式用它替代 generators（"下面哪个是"这类答案不唯一的选择题型不适合填空） */
+    var reviewGenerators: [QuestionGenerator]? = nil
 }
 
 /** 快问快答三模式 */

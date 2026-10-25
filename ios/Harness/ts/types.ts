@@ -92,6 +92,8 @@ export interface Skill {
   /** true 时复习模式键盘裁掉带分数空格键（答案永远不会是带分数的题库，如倒数） */
   hideMixedKey?: boolean;
   generators: QuestionGenerator[];
+  /** 复习模式专属生成器：设置后复习模式用它替代 generators（"下面哪个是"这类答案不唯一的选择题型不适合填空） */
+  reviewGenerators?: QuestionGenerator[];
 }
 
 /** 快问快答三模式 */
